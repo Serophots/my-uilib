@@ -179,6 +179,7 @@ do --Library class
       { --Children of ScreenGui
         util:CreateObject("RoundedFrame", {
           Size = util:Offsets(510, 430),
+          Position = UDim2.new(0.5, -(510/2), 0.5, -(430/2)),
           BackgroundColor3 = theme.BackColor,
           Name = "ScreenGui"
         })
@@ -376,7 +377,6 @@ do --Tab class
       }),
       util:CreateObject("TextLabel", { --Title text
         Size = UDim2.new(0, 0, 1, 0),
-        FitsText = true,
         Position = UDim2.new(0, 13, 0, 0),
         BackgroundTransparency = 1,
         TextXAlignment = Enum.TextXAlignment.Left,
