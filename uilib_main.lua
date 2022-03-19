@@ -2,8 +2,8 @@ print("UI Started loading")
 
 local input = game:GetService("UserInputService")
 
-local util = {}
-do --Utilities
+--Utilities
+local util = {} do 
 
   local letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
   function util.RandomString(length)
@@ -53,6 +53,8 @@ do --Utilities
       instance.ImageColor3 = instance.BackgroundColor3
     end
 
+    instance.Name = util.RandomString(10)
+
     if children == nil then
       return instance
     end
@@ -89,22 +91,13 @@ do --Utilities
 		game:GetService("TweenService"):Create(instance, TweenInfo.new(duration), properties):Play()
 	end
 
-  function util:Offsets(x, y) return UDim2.new(0, x, 0, y) end
-
-  function util:FitTextBounds(instance)
-    instance.Size = UDim2.new(instance.Size.X.Scale, instance.TextBounds.X, instance.Size.Y.Scale, 0)
-  end
+  function util:Offsets(x, y) return UDim2.new(0, x, 0, y) end --UDim2 class has a .fromOffsets function already, woops
 
   function util:MergeDictionaries(table1, table2)
     for i,v in pairs(table2) do table1[i] = v end
     return table1
   end
 
-  -- function util:ScaleToOffset(x, y, parentFrame)
-  --   x *= parentFrame.AbsoluteSize.X
-  --   y *= parentFrame.AbsoluteSize.Y
-  --   return x, y
-  -- end
   function util:ScaleToOffset(scale, parentFrame)
     print("Converting", scale)
     return UDim2.new(0, scale.X.Offset + (scale.X.Scale * parentFrame.AbsoluteSize.X), 0, scale.Y.Offset + (scale.Y.Scale * parentFrame.AbsoluteSize.Y))
@@ -156,14 +149,14 @@ end
 
 --Classes
 local library = {}
-local tab = {}
-local section = {}
-local interactableBuilder = {} --Chain differnet interactables together
-local interactable = {} -- Anything the user interacts with. Button, toggle, input, etc
 library.__index = library
+local tab = {}
 tab.__index = tab
+local section = {}
 section.__index = section
+local interactableBuilder = {} --Chain differnet interactables together
 interactableBuilder.__index = interactableBuilder
+local interactable = {} -- Anything the user interacts with. Button, toggle, input, etc
 interactable.__index = interactable
 
 --Theme
@@ -384,7 +377,7 @@ do --Tab class
         BackgroundColor3 = theme.InnerFrameColor,
         Name = "TabContentTopBarBottom"
       }),
-      util:CreateObject("TextLabel", {
+      util:CreateObject("TextLabel", { --Title text
         Size = UDim2.new(0, 0, 1, 0),
         FitsText = true,
         Position = UDim2.new(0, 13, 0, 0),
@@ -396,7 +389,7 @@ do --Tab class
         Text = title,
         Name = "Tab Title",
       }, {
-        util:CreateObject("TextLabel", {
+        util:CreateObject("TextLabel", { --Description Text
           Size = UDim2.new(5, 0, 1, 0),
           Position = UDim2.new(1, 6, 0, 0),
           BackgroundTransparency = 1,
@@ -423,9 +416,7 @@ do --Tab class
 
   function tab:AddSection(title)
     local newSection = section.new(self, title)
-
     table.insert(self.sections, newSection)
-
     return newSection
   end
 
