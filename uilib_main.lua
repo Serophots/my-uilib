@@ -40,7 +40,7 @@ local util = {} do
     for i,v in pairs(options) do
         instance[i] = v
     end
-    if roundedFrame then
+    if roundedFrame or roundedButton then
       instance.Image = "rbxassetid://4641149554"
       instance.ScaleType = Enum.ScaleType.Slice
       instance.SliceCenter = Rect.new(4, 4, 296, 296)
