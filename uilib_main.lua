@@ -29,7 +29,6 @@ local util = {} do
 
     local instance = Instance.new(t)
     
-    instance.Name = util.RandomString(10)
     if instance:IsA("GuiObject") then
       instance.BorderSizePixel = 0
     end
