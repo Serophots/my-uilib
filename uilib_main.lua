@@ -20,15 +20,21 @@ do --Utilities
   end
 
   function util:CreateObject(type, options, children, selectChildren, includeParent)
+    local t = type
+
     local roundedFrame = type == "RoundedFrame"
-    local instance = Instance.new(roundedFrame and "ImageButton" or type)
+    local roundedButton = type == "RoundedButton"
+
+    if roundedFrame then t = "ImageLabel" elseif roundedButton then t = "ImageButton" end
+
+    local instance = Instance.new(t)
     
     instance.Name = util.RandomString(10)
     if instance:IsA("GuiObject") then
       instance.BorderSizePixel = 0
     end
 
-    if roundedFrame then
+    if roundedFrame or roundedButton then
       instance.BackgroundTransparency = 1
     end
 
@@ -306,14 +312,14 @@ do --Tab class
       Position = UDim2.new(0, 3.5, 0, (53.7 * (tabNumberM-1) ) + 3.5 ),
       Name = "TabSelectorColor",
     }, {
-      util:CreateObject("RoundedFrame", {
-        Size = UDim2.new(1, 5, 1, 0), --1, -7+5, etc
-        Position = UDim2.new(0, 0, 0, 0), --0, 7, etc
+      util:CreateObject("RoundedButton", {
+        Size = UDim2.new(1, 5, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
         BackgroundColor3 = theme.InnerFrameColor,
         Name = "TabSelectorContainer",
       }, {
-        util:CreateObject("Frame", { --Thick left side line
-          Size = UDim2.new(0, 20, 1, 0),
+        util:CreateObject("Frame", { --Grey tab button, overlays green/red selector
+          Size = UDim2.new(1, 0, 1, 0),
           BackgroundColor3 = theme.InnerFrameColor,
         }),
         util:CreateObject("TextLabel", { --Tab title
@@ -635,7 +641,7 @@ do --Interactable
   end
 
   function interactable:button(text, callback)
-    local b = util:CreateObject("RoundedFrame", {
+    local b = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
@@ -704,7 +710,7 @@ do --Interactable
 
   function interactable:toggle(text, callback, c)
     self.checked = c
-    local checkbox = util:CreateObject("RoundedFrame", {
+    local checkbox = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
@@ -719,7 +725,6 @@ do --Interactable
         BorderColor3 = theme.ButtonClickedColor,
         BackgroundTransparency = 0,
         Name = "Checkbox",
-        AutoButtonColor = false,
       }, {
         util:CreateObject("TextLabel", {
           Size = UDim2.new(1, 0, 1, 0),
@@ -797,7 +802,6 @@ do --Interactable
         BorderColor3 = theme.ButtonClickedColor,
         BackgroundTransparency = 0,
         Name = "InputBox",
-        AutoButtonColor = false,
       }, {
         util:CreateObject("TextBox", {
           Size = UDim2.new(1,-10,1,0),
@@ -821,7 +825,6 @@ do --Interactable
         BorderColor3 = theme.ButtonClickedColor,
         BackgroundTransparency = 0,
         Name = "LowerSymbol",
-        AutoButtonColor = false,
       }, {
         util:CreateObject("TextLabel", {
           Size = UDim2.new(1, 0, 1, 0),
@@ -885,7 +888,6 @@ do --Interactable
       BorderColor3 = theme.ButtonClickedColor,
       BackgroundTransparency = 0,
       Name = "InputBox",
-      AutoButtonColor = false,
       ZIndex = 10,
     }, {
       util:CreateObject("TextLabel", {
@@ -1031,7 +1033,6 @@ do --Interactable
           BorderColor3 = theme.ButtonClickedColor,
           BackgroundTransparency = 0,
           Name = "Checkbox",
-          AutoButtonColor = false,
         })
       })
     }, true))
