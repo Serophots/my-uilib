@@ -1,10 +1,10 @@
 print("UI Started loading")
 
 local input = game:GetService("UserInputService")
+local mouse = game.Players.LocalPlayer:GetMouse()
 
 --Utilities
 local util = {} do 
-
   local letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
   function util.RandomString(length)
     local random = Random.new()
@@ -93,7 +93,6 @@ local util = {} do
   end
 
   function util:ScaleToOffset(scale, parentFrame)
-    print("Converting", scale)
     return UDim2.new(0, scale.X.Offset + (scale.X.Scale * parentFrame.AbsoluteSize.X), 0, scale.Y.Offset + (scale.Y.Scale * parentFrame.AbsoluteSize.Y))
   end
 
@@ -168,6 +167,10 @@ local theme = getgenv().theme or {
 
   MainTextColor = Color3.fromRGB(255,255,255),
   SubTextColor = Color3.fromRGB(200,200,200),
+  
+  SliderBar = Color3.fromRGB(200,200,200),
+  SliderBarValue = Color3.fromRGB(255, 255, 255),
+  
 }
 
 do --Library class
@@ -545,6 +548,12 @@ do --Section class
     return interactableBuilder.new(self):AddKeybind(text, defaultKeybind, callback)
   end
 
+  function section:AddSlider(text, values, callback, round)
+    local r = interactableBuilder.new(self):AddSlider(text, values, callback, round)
+    interactableBuilder.new(self):_blank(10)
+    return r
+  end
+
   function section:AddLabel(text)
     return interactableBuilder.new(self):AddLabel(text)
   end
@@ -604,6 +613,15 @@ do --InteractableBuilder
   function interactableBuilder:AddKeybind(text, defaultKeybind, callback)
     table.insert(self.interactables, interactable.new(self):keybind(text, defaultKeybind, callback).returns)
     return self
+  end
+
+  function interactableBuilder:AddSlider(text, values, callback, round)
+    table.insert(self.interactables, interactable.new(self):slider(text, values, callback, round).returns)
+    return self
+  end
+
+  function interactableBuilder:_blank(parentHeight)
+    table.insert(self.interactables, interactable.new(self):blank(parentHeight).returns)
   end
 
   function interactableBuilder:AddLabel(text)
@@ -904,7 +922,6 @@ do --Interactable
 
       DropdownInputBox:ReleaseFocus()
       DropdownInputBox.Text = clicked
-
     end
 
     function updateOptions(optionss)
@@ -1068,6 +1085,134 @@ do --Interactable
     return self
   end
 
+  function interactable:slider(text, values, callback, round)
+    self.value = values.default
+
+    local SliderText, SliderContainer = unpack(util:CreateObject("RoundedFrame", {
+      Parent = self.InteractableContainer,
+      Position = UDim2.new(0, 7, 0, 0),
+      Size = UDim2.new(1, -14, 1, 10+7), --relies on :_blank
+      BackgroundColor3 = theme.InteractiveBackColor,
+      Name = "Slider",
+    }, {
+      util:CreateObject("TextLabel", { --Slider text
+        Position = UDim2.new(0, 7, 0, 0),
+        Size = UDim2.new(1, -14, 0, 25),
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        TextColor3 = theme.SubTextColor,
+        TextSize = 11,
+        Font = Enum.Font.GothamBold,
+        Text = round(self.value),
+      }),
+      util:CreateObject("TextButton", {
+        Size = UDim2.new(1, -8, 0, 25-12),
+        Position = UDim2.new(0, 4, 0.5, 2),
+        BackgroundTransparency = 1,
+        Name = "SliderContainer"
+      }, {
+      })
+    }, true))
+
+    local SliderValueBox = util:CreateChildren(SliderText, {
+      util:CreateObject("TextLabel", { --Value box
+        Size = UDim2.new(0, 27-12, 0, 27-12),
+        Position = UDim2.new(1, -15, 0, 6),
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        TextColor3 = theme.SubTextColor,
+        TextSize = 10,
+        Font = Enum.Font.GothamBold,
+        Text = "5",
+        ZIndex = 2,
+      }, {
+        util:CreateObject("RoundedFrame", {
+          Size = UDim2.new(1,0,1,0),
+          BorderSizePixel = 1,
+          BackgroundColor3 = theme.InnerFrameColor,
+          BorderColor3 = theme.ButtonClickedColor,
+          BackgroundTransparency = 0,
+        })
+      })
+    })[1]
+
+    local SliderBar, SliderSelector = unpack(util:CreateChildren(SliderContainer, {
+      util:CreateObject("Frame", {
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, -15, 0, 2),
+        Position = UDim2.new(0, 7, 0.5, -1),
+        BackgroundColor3 = theme.SliderBar,
+        Name = "SliderBar"
+      }, {
+        util:CreateObject("Frame", {
+          BorderSizePixel = 0,
+          Size = UDim2.new(0, 2, 0, 6),
+          Position = UDim2.new(0, 0, 0.5, -3),
+          BackgroundColor3 = theme.SliderBar,
+          Name = "LeftEnd",
+        }),
+        util:CreateObject("Frame", {
+          BorderSizePixel = 0,
+          Size = UDim2.new(0, 2, 0, 6),
+          Position = UDim2.new(1, -2, 0.5, -3),
+          BackgroundColor3 = theme.SliderBar,
+          Name = "RightEnd",
+        }),
+      }),
+      util:CreateObject("RoundedFrame", {
+        BorderSizePixel = 0,
+        Size = UDim2.new(0, 10, 0, 10),
+        Position = UDim2.new(0.5, -5, 0.5, -5),
+        ZIndex = 5,
+        BackgroundColor3 = theme.SliderBarValue,
+        Name = "SliderSelector"
+      })
+    }))
+
+    local isHoldingSlider = false
+    local function customClamp(v, mi, ma)
+      if v < mi then
+        isHoldingSlider = false
+        return mi
+      elseif v > ma then
+        isHoldingSlider = false
+        return ma
+      end
+      return v
+    end
+    local function updateSlider(mousePosX)
+      SliderSelector.Position = UDim2.new(0, customClamp(mousePosX - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X), 0.5, -5)
+    end
+    local function endInput()
+      isHoldingSlider = false
+      local SliderPosition = math.clamp(SliderSelector.Position.X.Offset/SliderBar.AbsoluteSize.X, 0, 1)
+      print("HUh", SliderPosition)
+      self.value = values.min + (SliderPosition * (values.max - values.min))
+      callback(self.value)
+      SliderValueBox.Text = round(self.value)
+    end
+
+    SliderContainer.MouseButton1Down:Connect(function(x) updateSlider(x) isHoldingSlider = true end)
+    input.InputEnded:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseButton1 then endInput() end end)
+    input.InputChanged:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseMovement and isHoldingSlider then updateSlider(inp.Position.X) end end)
+
+    self.InteractableBuilder:_updateSize()
+    self.InteractableBuilder.section:_updateSize()
+
+    self.type = "slider"
+    self.returns = {
+      value = function() return self.value end,
+      SetValue = function(newValue)
+        local p = math.clamp((newValue-values.min)/(values.max-values.min), 0, 1)
+        SliderSelector.Position = UDim2.new(0, p * SliderBar.AbsoluteSize.X, 0.5, -5)
+        endInput()
+      end
+    }
+    return self
+  end
+
   function interactable:label(text)
     local textLabel = util:CreateObject("TextLabel", {
       Parent = self.InteractableContainer,
@@ -1091,6 +1236,16 @@ do --Interactable
       text = text,
       UpdateText = function(text) textLabel.Text = text end
     }
+    return self
+  end
+
+  function interactable:blank(parentHeight)
+    self.InteractableBuilder.InteractableBuilderContainer.Size = UDim2.new(1, 0, 0, parentHeight)
+
+    self.InteractableBuilder:_updateSize()
+    self.InteractableBuilder.section:_updateSize()
+
+    self.type = "blank"
     return self
   end
 end
