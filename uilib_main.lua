@@ -38,12 +38,7 @@ local util = {} do
     end
 
     for i,v in pairs(options) do
-      if i == "FitsText" and v == true then
-        instance:GetPropertyChangedSignal("TextBounds"):Connect(function() util:FitTextBounds(instance) end)
-        util:FitTextBounds(instance)
-      else
         instance[i] = v
-      end
     end
     if roundedFrame then
       instance.Image = "rbxassetid://4641149554"
@@ -363,7 +358,7 @@ do --Tab class
       })
     }, true)[1]
 
-    local TabContentTopBar, TabContentTopBarTitle = unpack(util:CreateObject("RoundedFrame", { --Top bar
+    local TabTitleText = util:CreateObject("RoundedFrame", { --Top bar
       Parent = TabContentContainer.Parent,
       Position = UDim2.new(0, 0, 0, 0),
       Size = UDim2.new(1, 0, 0, 35),
@@ -400,7 +395,10 @@ do --Tab class
           Name = "Tab Desc",
         })
       })
-    }, true, true))
+    }, true)[2]
+
+    TabTitleText.Size = UDim2.new(0, TabTitleText.TextBounds.X, 1, 0)
+
 
     return setmetatable({
       library = library,
