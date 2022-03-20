@@ -3,6 +3,8 @@ print("UI Started loading")
 local input = game:GetService("UserInputService")
 local mouse = game.Players.LocalPlayer:GetMouse()
 
+local function EmptyFunction() end
+
 --Utilities
 local util = {} do 
   local letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
@@ -246,6 +248,7 @@ do --Library class
       TabsSelectContainer = TabSelectContainer,
       TabsContentContainer = TabContentContainer,
       tabs = {},
+      values = {}, --UI.values.tab.section["a toggle"] = its current set value
       selectedTab = 1,
     }, library)
   end
@@ -460,6 +463,7 @@ do --Tab class
 end
 
 do --Section class
+  --tab.library = library
   function section.new(tab, title)
     local SectionContainer = util:CreateObject("RoundedFrame", {
       Parent = tab.TabContentContainer,
@@ -493,6 +497,7 @@ do --Section class
 
     return setmetatable({
       tab = tab,
+      title = title,
       items = {},
       SectionContainer = SectionContainer,
       UIListLayout = UIListLayout,
@@ -536,6 +541,7 @@ do --Section class
 end
 
 do --InteractableBuilder
+  --section.tab.library
   function interactableBuilder.new(section)
     local InteractableBuilderContainer = util:CreateObject("Frame", {
       Parent = section.SectionContainer,
@@ -602,6 +608,7 @@ do --InteractableBuilder
 end
 
 do --Interactable
+  --InteractableBuilder.section.tab.library
   function interactable.new(InteractableBuilder)
     local InteractableContainer = util:CreateObject("ImageLabel", {
       Size = UDim2.new(0, 0, 1, 0),
@@ -613,11 +620,25 @@ do --Interactable
     return setmetatable({
       InteractableBuilder = InteractableBuilder,
       InteractableContainer = InteractableContainer,
+      library = InteractableBuilder.section.tab.library,
       type = "",
     }, interactable)
   end
 
+  function interactable:_GlobalTable()
+    local values = self.library.values
+    local tab = self.InteractableBuilder.section.tab.title
+    local section = self.InteractableBuilder.section.title
+
+    if not values[tab] then values[tab] = {} end
+    if not values[tab][section] then values[tab][section] = {} end
+
+    return values[tab][section]
+  end
+
   function interactable:button(text, callback)
+    callback = callback and callback or EmptyFunction
+
     local button = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
@@ -655,6 +676,8 @@ do --Interactable
   end
 
   function interactable:buttononetime(text, callback)
+    callback = callback and callback or EmptyFunction
+
     local button = util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
@@ -694,7 +717,12 @@ do --Interactable
   end
 
   function interactable:toggle(text, callback, c)
+    callback = callback and callback or EmptyFunction
+    local GlobalTable = self:_GlobalTable()
+    
     self.checked = c
+    GlobalTable[text] = self.checked
+
     local checkbox = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
@@ -745,6 +773,7 @@ do --Interactable
     
     function toggle()
       self.checked = not self.checked
+      GlobalTable[text] = self.checked
       callback(self.checked)
       updateCheck()
     end
@@ -757,16 +786,24 @@ do --Interactable
     self.type = "toggle"
     self.returns = {
       toggle = toggle,
-      setToggled = function(i) self.checked = i; updateCheck() end,
-    } --TODO
+      setToggled = function(i)
+        self.checked = i
+        GlobalTable[text] = self.checked
+        updateCheck()
+      end,
+    }
     return self
   end
 
   function interactable:dropdown(text, placeholder, options, callback, preselected)
+    callback = callback and callback or EmptyFunction
+    local GlobalTable = self:_GlobalTable()
+
     self.options = options
     self.optionObjects = {}
     self.dropdownVisible = false
     self.selectedOption = preselected or 0 --Index of options table
+    GlobalTable[text] = self.options[self.selectedOption]
 
     local DropdownInput, DropdownMenuToggle = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -806,6 +843,7 @@ do --Interactable
         BorderColor3 = theme.ButtonClickedColor,
         BackgroundTransparency = 0,
         Name = "LowerSymbol",
+        AutoButtonColor = false,
       }, {
         util:CreateObject("TextLabel", {
           Size = UDim2.new(1, 0, 1, 0),
@@ -824,7 +862,7 @@ do --Interactable
     local SectionColorExtension,UIListLayout,_,DropdownMenuContainer = unpack(util:CreateObject("RoundedFrame", { --Extension of Section color
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 0, 1, 4),
-      Size = UDim2.new(1, 0, 1, 0),
+      Size = UDim2.new(1,0,500,0),
       BackgroundColor3 = theme.InnerFrameColor,
       ZIndex = 10,
       Visible = self.dropdownVisible
@@ -859,7 +897,6 @@ do --Interactable
         }),
       })
     }, true, true))
-    SectionColorExtension.Size = UDim2.new(1,0,500,0)
 
     local TemplateDropdownOption = util:CreateObject("RoundedButton", {
       Size = UDim2.new(1, -14, 0, 16),
@@ -892,6 +929,7 @@ do --Interactable
 
     function optionClicked(i, clicked)
       self.selectedOption = i
+      GlobalTable[text] = self.options[self.selectedOption]
       callback(clicked, i)
       updateVisibility(false)
 
@@ -932,6 +970,7 @@ do --Interactable
       if DropdownInputBox.Text == self.options[self.selectedOption] then
         DropdownInputBox.Text = ""
         self.selectedOption = 0
+        GlobalTable[text] = self.options[self.selectedOption]
         callback("", 0)
       end
 
@@ -942,6 +981,7 @@ do --Interactable
       wait(0.1)
       if DropdownInputBox.Text ~= self.options[self.selectedOption] then
         self.selectedOption = 0
+        GlobalTable[text] = self.options[self.selectedOption]
         callback("", 0)
       end
 
@@ -970,7 +1010,11 @@ do --Interactable
   end
 
   function interactable:keybind(text, defaultKeybind, callback)
+    callback = callback and callback or EmptyFunction
+    local GlobalTable = self:_GlobalTable()
+
     self.key = defaultKeybind
+    GlobalTable[text] = self.key
 
     local _,KeybindBox = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -1025,12 +1069,14 @@ do --Interactable
     function ListenForNewKey()
       KeybindBox.Text = "Listening..."
       self.key = nil
+      GlobalTable[text] = self.key
       callback(self.key)
 
       local prevWS = util:GetLocalCharacter("Humanoid").WalkSpeed or 0
       util:GetLocalCharacter("Humanoid").WalkSpeed = 0 -- /shrug pretty lazzy but it works
 
       self.key = util:ListenForKeypress().KeyCode
+      GlobalTable[text] = self.key
       KeybindBox.Text = self.key.Name
       callback(self.key)
 
@@ -1040,6 +1086,7 @@ do --Interactable
 
     function SetKey(newKey)
       self.key = newKey
+      GlobalTable[text] = self.key
       KeybindBox.Text = self.key.Name
       callback(self.key)
     end
@@ -1059,7 +1106,11 @@ do --Interactable
   end
 
   function interactable:slider(text, values, callback, round)
+    callback = callback and callback or EmptyFunction
+    local GlobalTable = self:_GlobalTable()
+
     self.value = values.default
+    GlobalTable[text] = self.value
 
     local SliderText, SliderContainer = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -1162,8 +1213,9 @@ do --Interactable
       isHoldingSlider = false
       
       self.value = values.min + (SliderSelector.Position.X.Scale * (values.max - values.min))
+      GlobalTable[text] = self.value
       SliderValueBox.Text = round(self.value)
-      
+
       callback(self.value)
     end
 
