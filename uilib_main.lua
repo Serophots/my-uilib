@@ -1077,7 +1077,7 @@ do --Interactable
         TextColor3 = theme.SubTextColor,
         TextSize = 11,
         Font = Enum.Font.GothamBold,
-        Text = round(self.value),
+        Text = text,
       }),
       util:CreateObject("TextButton", {
         Size = UDim2.new(1, -8, 0, 25-12),
@@ -1098,7 +1098,7 @@ do --Interactable
         TextColor3 = theme.SubTextColor,
         TextSize = 10,
         Font = Enum.Font.GothamBold,
-        Text = "5",
+        Text = round(self.value),
         ZIndex = 2,
       }, {
         util:CreateObject("RoundedFrame", {
@@ -1137,7 +1137,7 @@ do --Interactable
       util:CreateObject("RoundedFrame", {
         BorderSizePixel = 0,
         Size = UDim2.new(0, 10, 0, 10),
-        Position = UDim2.new(0.5, -5, 0.5, -5),
+        Position = UDim2.new((self.value-values.min)/(values.max-values.min), -5, 0.5, -5),
         ZIndex = 5,
         BackgroundColor3 = theme.SliderBarValue,
         Name = "SliderSelector"
@@ -1156,15 +1156,15 @@ do --Interactable
       return v
     end
     local function updateSlider(mousePosX)
-      SliderSelector.Position = UDim2.new(0, customClamp(mousePosX - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X), 0.5, -5)
+      SliderSelector.Position = UDim2.new(customClamp(mousePosX - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X) / SliderBar.AbsoluteSize.X, -5, 0.5, -5)
     end
     local function endInput()
       isHoldingSlider = false
-      local SliderPosition = math.clamp(SliderSelector.Position.X.Offset/SliderBar.AbsoluteSize.X, 0, 1)
-      print("HUh", SliderPosition)
-      self.value = values.min + (SliderPosition * (values.max - values.min))
-      callback(self.value)
+      
+      self.value = values.min + (SliderSelector.Position.X.Scale * (values.max - values.min))
       SliderValueBox.Text = round(self.value)
+      
+      callback(self.value)
     end
 
     SliderContainer.MouseButton1Down:Connect(function(x) updateSlider(x) isHoldingSlider = true end)
@@ -1178,8 +1178,7 @@ do --Interactable
     self.returns = {
       value = function() return self.value end,
       SetValue = function(newValue)
-        local p = math.clamp((newValue-values.min)/(values.max-values.min), 0, 1)
-        SliderSelector.Position = UDim2.new(0, p * SliderBar.AbsoluteSize.X, 0.5, -5)
+        SliderSelector.Position = UDim2.new(0, math.clamp((newValue-values.min)/(values.max-values.min), 0, 1) * SliderBar.AbsoluteSize.X, 0.5, -5)
         endInput()
       end
     }
