@@ -504,34 +504,35 @@ do --Section class
     }, section)
   end
 
-  function section:AddButton(text, callback)
-    return interactableBuilder.new(self):AddButton(text, callback)
+  function section:AddButton(data)
+    return interactableBuilder.new(self):AddButton(data)
+    -- return interactableBuilder.new(self):AddButton(text, callback)
   end
 
-  function section:AddOneTimeClickButton(text, callback)
-    return interactableBuilder.new(self):AddOneTimeClickButton(text, callback)
+  function section:AddOneTimeClickButton(data)
+    return interactableBuilder.new(self):AddOneTimeClickButton(data)
   end
   
-  function section:AddToggle(text, callback, checked)
-    return interactableBuilder.new(self):AddToggle(text, callback, checked)
+  function section:AddToggle(data)
+    return interactableBuilder.new(self):AddToggle(data)
   end
 
-  function section:AddDropdown(text, placeholder, options, callback)
-    return interactableBuilder.new(self):AddDropdown(text, placeholder, options, callback)
+  function section:AddDropdown(data)
+    return interactableBuilder.new(self):AddDropdown(data)
   end
 
-  function section:AddKeybind(text, defaultKeybind, callback)
-    return interactableBuilder.new(self):AddKeybind(text, defaultKeybind, callback)
+  function section:AddKeybind(data)
+    return interactableBuilder.new(self):AddKeybind(data)
   end
 
-  function section:AddSlider(text, values, callback, round)
-    local r = interactableBuilder.new(self):AddSlider(text, values, callback, round)
+  function section:AddSlider(data)
+    local r = interactableBuilder.new(self):AddSlider(data)
     interactableBuilder.new(self):_blank(10)
     return r
   end
 
-  function section:AddLabel(text)
-    return interactableBuilder.new(self):AddLabel(text)
+  function section:AddLabel(data)
+    return interactableBuilder.new(self):AddLabel(data)
   end
 
   function section:_updateSize()
@@ -567,33 +568,33 @@ do --InteractableBuilder
     end
   end
 
-  function interactableBuilder:AddButton(text, callback)
-    table.insert(self.interactables, interactable.new(self):button(text, callback).returns)
+  function interactableBuilder:AddButton(data)
+    table.insert(self.interactables, interactable.new(self):button(data).returns)
     return self
   end
 
-  function interactableBuilder:AddOneTimeClickButton(text, callback)
-    table.insert(self.interactables, interactable.new(self):buttononetime(text, callback).returns)
+  function interactableBuilder:AddOneTimeClickButton(data)
+    table.insert(self.interactables, interactable.new(self):buttononetime(data).returns)
     return self
   end
 
-  function interactableBuilder:AddToggle(text, callback, checked)
-    table.insert(self.interactables, interactable.new(self):toggle(text, callback, checked).returns)
+  function interactableBuilder:AddToggle(data)
+    table.insert(self.interactables, interactable.new(self):toggle(data).returns)
     return self
   end
 
-  function interactableBuilder:AddDropdown(text, placeholder, options, callback)
-    table.insert(self.interactables, interactable.new(self):dropdown(text, placeholder, options, callback).returns)
+  function interactableBuilder:AddDropdown(data)
+    table.insert(self.interactables, interactable.new(self):dropdown(data).returns)
     return self
   end
 
-  function interactableBuilder:AddKeybind(text, defaultKeybind, callback)
-    table.insert(self.interactables, interactable.new(self):keybind(text, defaultKeybind, callback).returns)
+  function interactableBuilder:AddKeybind(data)
+    table.insert(self.interactables, interactable.new(self):keybind(data).returns)
     return self
   end
 
-  function interactableBuilder:AddSlider(text, values, callback, round)
-    table.insert(self.interactables, interactable.new(self):slider(text, values, callback, round).returns)
+  function interactableBuilder:AddSlider(data)
+    table.insert(self.interactables, interactable.new(self):slider(data).returns)
     return self
   end
 
@@ -601,8 +602,8 @@ do --InteractableBuilder
     table.insert(self.interactables, interactable.new(self):blank(parentHeight).returns)
   end
 
-  function interactableBuilder:AddLabel(text)
-    table.insert(self.interactables, interactable.new(self):label(text).returns)
+  function interactableBuilder:AddLabel(data)
+    table.insert(self.interactables, interactable.new(self):label(data).returns)
     return self
   end
 end
@@ -636,8 +637,9 @@ do --Interactable
     return values[tab][section]
   end
 
-  function interactable:button(text, callback)
-    callback = callback and callback or EmptyFunction
+  function interactable:button(data)--text, callback)
+    -- callback = callback and callback or EmptyFunction
+    local text, callback = data.title or "", data.callback or EmptyFunction
 
     local button = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
@@ -675,8 +677,9 @@ do --Interactable
     return self
   end
 
-  function interactable:buttononetime(text, callback)
-    callback = callback and callback or EmptyFunction
+  function interactable:buttononetime(data)--text, callback)
+    -- callback = callback and callback or EmptyFunction
+    local text, callback = data.title or "", data.callback or EmptyFunction
 
     local button = util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -716,8 +719,9 @@ do --Interactable
     return self
   end
 
-  function interactable:toggle(text, callback, c)
-    callback = callback and callback or EmptyFunction
+  function interactable:toggle(data)--text, callback, c)
+    -- callback = callback and callback or EmptyFunction
+    local text, callback, c = data.title or "", data.callback or EmptyFunction, data.checked or false
     local GlobalTable = self:_GlobalTable()
     
     self.checked = c
@@ -795,8 +799,9 @@ do --Interactable
     return self
   end
 
-  function interactable:dropdown(text, placeholder, options, callback, preselected)
-    callback = callback and callback or EmptyFunction
+  function interactable:dropdown(data)--text, placeholder, options, callback, preselected)
+    -- callback = callback and callback or EmptyFunction
+    local text, placeholder, options, callback, preselected = data.title or "", data.placeholder or "", data.options or {}, data.callback or EmptyFunction, data.default
     local GlobalTable = self:_GlobalTable()
 
     self.options = options
@@ -1009,8 +1014,9 @@ do --Interactable
     return self
   end
 
-  function interactable:keybind(text, defaultKeybind, callback)
-    callback = callback and callback or EmptyFunction
+  function interactable:keybind(data)--text, defaultKeybind, callback)
+    -- callback = callback and callback or EmptyFunction
+    local text, defaultKeybind, callback = data.title or "", data.default, data.callback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
 
     self.key = defaultKeybind
@@ -1105,8 +1111,9 @@ do --Interactable
     return self
   end
 
-  function interactable:slider(text, values, callback, round)
-    callback = callback and callback or EmptyFunction
+  function interactable:slider(data)--text, values, callback, round)
+    -- callback = callback and callback or EmptyFunction
+    local text, values, callback, round = data.title or "", data.values or {min=1,max=100,default=50}, data.callback or EmptyFunction, data.round or tostring
     local GlobalTable = self:_GlobalTable()
 
     self.value = values.default
@@ -1237,7 +1244,9 @@ do --Interactable
     return self
   end
 
-  function interactable:label(text)
+  function interactable:label(data)--text)
+    local text = data.title or ""
+
     local textLabel = util:CreateObject("TextLabel", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
