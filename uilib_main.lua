@@ -87,33 +87,7 @@ local util = {} do
 
   function util:Offsets(x, y) return UDim2.new(0, x, 0, y) end --UDim2 class has a .fromOffsets function already, woops
 
-  function util:MergeDictionaries(table1, table2)
-    for i,v in pairs(table2) do table1[i] = v end
-    return table1
-  end
-
-  function util:ScaleToOffset(scale, parentFrame)
-    return UDim2.new(0, scale.X.Offset + (scale.X.Scale * parentFrame.AbsoluteSize.X), 0, scale.Y.Offset + (scale.Y.Scale * parentFrame.AbsoluteSize.Y))
-  end
-
-
-  function util:GetLargestChildOffset(parent, axis)
-    if not axis then axis = "Y" end
-
-    local lowestElement = 0
-    
-    for i,child in pairs(parent:GetChildren()) do
-      if child:IsA("GuiObject") then
-        if child.Visible then
-          local furthestPoint = child.AbsoluteSize[axis] + util:ScaleToOffset(child.Position, parent)[axis].Offset
-          if furthestPoint > lowestElement then
-            lowestElement = furthestPoint
-          end
-        end
-      end
-    end
-    return lowestElement
-  end
+  function util:Centered(x, y) return UDim2.new(0.5, -(x/2), 0.5, -(y/2)) end
 
   function util:ListenForKeypress()
     local key
@@ -170,20 +144,18 @@ local theme = getgenv().theme or {
   
   SliderBar = Color3.fromRGB(200,200,200),
   SliderBarValue = Color3.fromRGB(255, 255, 255),
-  
 }
 
 do --Library class
   function library.init(title, version, owner, id)
-    local MasterContainer = util:CreateObject("ScreenGui", { Parent = game:GetService("CoreGui") },
-      { --Children of ScreenGui
-        util:CreateObject("RoundedFrame", {
-          Size = util:Offsets(510, 430),
-          Position = UDim2.new(0.5, -(510/2), 0.5, -(430/2)),
-          BackgroundColor3 = theme.BackColor,
-          Name = "ScreenGui"
-        })
-      }, true)[1]
+    local MasterContainer = util:CreateObject("ScreenGui", { Parent = game:GetService("CoreGui") }, {
+      util:CreateObject("RoundedFrame", {
+        Size = util:Offsets(510, 430),
+        Position = util:Centered(510, 430), --UDim2.new(0.5, -(510/2), 0.5, -(430/2)),
+        BackgroundColor3 = theme.BackColor,
+        Name = "ScreenGui"
+      })
+    }, true)[1]
 
     if getgenv()[id] then getgenv()[id]:Destroy() end
     getgenv()[id] = MasterContainer.Parent
@@ -402,7 +374,6 @@ do --Tab class
 
     TabTitleText.Size = UDim2.new(0, TabTitleText.TextBounds.X, 1, 0)
 
-
     return setmetatable({
       library = library,
       title = title,
@@ -574,9 +545,9 @@ do --InteractableBuilder
     })
 
     return setmetatable({
-      interactables = {},
       section = section,
-      InteractableBuilderContainer = InteractableBuilderContainer
+      interactables = {},
+      InteractableBuilderContainer = InteractableBuilderContainer,
     }, interactableBuilder)
   end
 
@@ -647,7 +618,7 @@ do --Interactable
   end
 
   function interactable:button(text, callback)
-    local b = util:CreateObject("RoundedButton", {
+    local button = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
@@ -665,22 +636,26 @@ do --Interactable
       })
     })
 
-    b.MouseButton1Click:Connect(function()
-      b.ImageColor3 = theme.ButtonClickedColor
+    button.MouseButton1Click:Connect(function()
+      button.ImageColor3 = theme.ButtonClickedColor
       callback()
-      util:Tween(b, { ImageColor3 = theme.InteractiveBackColor }, .3)
+      util:Tween(button, { ImageColor3 = theme.InteractiveBackColor }, .3)
     end)
 
     self.InteractableBuilder:_updateSize()
     self.InteractableBuilder.section:_updateSize()
 
     self.type = "button"
-    self.returns = { interactable = self, text = text, callback = callback }
+    self.returns = {
+      interactable = self,
+      text = text,
+      callback = callback
+    }
     return self
   end
 
   function interactable:buttononetime(text, callback)
-    local b = util:CreateObject("RoundedFrame", {
+    local button = util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
@@ -698,19 +673,23 @@ do --Interactable
       })
     })
 
-    local conn
-    conn = b.MouseButton1Click:Connect(function()
-      b.ImageColor3 = theme.ButtonClickedColor
+    local connection
+    connection = button.MouseButton1Click:Connect(function()
+      button.ImageColor3 = theme.ButtonClickedColor
       callback()
-      util:Tween(b, { ImageColor3 = theme.ButtonUsedColor }, .3)
-      conn:Disconnect()
+      util:Tween(button, { ImageColor3 = theme.ButtonUsedColor }, .3)
+      connection:Disconnect()
     end)
 
     self.InteractableBuilder:_updateSize()
     self.InteractableBuilder.section:_updateSize()
 
     self.type = "buttononetime"
-    self.returns = { interactable = self, text = text, callback = callback }
+    self.returns = {
+      interactable = self,
+      text = text,
+      callback = callback
+    }
     return self
   end
 
@@ -760,11 +739,7 @@ do --Interactable
     local CheckLabel = checkbox:GetChildren()[1]:GetChildren()[1]
 
     local function updateCheck()
-      if self.checked then
-        util:Tween(CheckLabel, { TextTransparency = 0 }, .1)
-      else
-        util:Tween(CheckLabel, { TextTransparency = 1 }, .1)
-      end
+      util:Tween(CheckLabel, { TextTransparency = self.checked and 0 or 1 }, .1)
     end
     updateCheck()
     
@@ -823,7 +798,7 @@ do --Interactable
           ClipsDescendants = true,
         })
       }),
-      util:CreateObject("RoundedFrame", { --Dropdown arrow symbol
+      util:CreateObject("RoundedButton", { --Dropdown arrow symbol
         Size = UDim2.new(0, 27-12, 0, 27-12),
         Position = UDim2.new(1, -22, 0, 6),
         BorderSizePixel = 1,
@@ -864,7 +839,6 @@ do --Interactable
         BackgroundTransparency = 1,
         LayoutOrder = 1,
       }),
-
       util:CreateObject("RoundedFrame", { --Extension of inner section color --DropdownMenuContainer
         Size = UDim2.new(1, -14, 0, 0),
         BackgroundColor3 = theme.InteractiveBackColor,
@@ -887,7 +861,7 @@ do --Interactable
     }, true, true))
     SectionColorExtension.Size = UDim2.new(1,0,500,0)
 
-    local TemplateDropdownOption = util:CreateObject("RoundedFrame", {
+    local TemplateDropdownOption = util:CreateObject("RoundedButton", {
       Size = UDim2.new(1, -14, 0, 16),
       BorderSizePixel = 1,
       BackgroundColor3 = theme.InnerFrameColor,
@@ -895,6 +869,7 @@ do --Interactable
       BackgroundTransparency = 0,
       Name = "InputBox",
       ZIndex = 10,
+      AutoButtonColor = false,
     }, {
       util:CreateObject("TextLabel", {
         Size = UDim2.new(1,-10,1,0),
@@ -904,7 +879,7 @@ do --Interactable
         TextSize = 10,
         TextXAlignment = Enum.TextXAlignment.Left,
         Font = Enum.Font.GothamBold,
-        Text = "eases",
+        Text = "",
         ClipsDescendants = true,
         ZIndex = 10,
       })
@@ -938,9 +913,7 @@ do --Interactable
         local OptionText = OptionContainer:FindFirstChildOfClass("TextLabel")
         OptionText.Text = option
 
-        OptionContainer.MouseButton1Click:Connect(function()
-          optionClicked(i, option)
-        end)
+        OptionContainer.MouseButton1Click:Connect(function() optionClicked(i, option) end)
 
         table.insert(self.optionObjects, OptionContainer)
       end
@@ -966,7 +939,7 @@ do --Interactable
     end)
 
     DropdownInputBox.FocusLost:Connect(function()
-      wait(.1)
+      wait(0.1)
       if DropdownInputBox.Text ~= self.options[self.selectedOption] then
         self.selectedOption = 0
         callback("", 0)
