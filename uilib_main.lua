@@ -331,7 +331,7 @@ do --Tab class
       }, {
         util:CreateObject("UIListLayout", {
           VerticalAlignment = Enum.VerticalAlignment.Top,
-          Padding = UDim.new(0, 7),
+          Padding = UDim.new(0, 8), --symmetry states 7, but I perfer 8
           SortOrder = Enum.SortOrder.LayoutOrder,
         })
       })
@@ -681,7 +681,7 @@ do --Interactable
     -- callback = callback and callback or EmptyFunction
     local text, callback = data.title or "", data.callback or EmptyFunction
 
-    local button = util:CreateObject("RoundedFrame", {
+    local button = util:CreateObject("RoundedButton", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
@@ -1169,7 +1169,7 @@ do --Interactable
       })
     })[1]
 
-    local SliderBar, SliderSelector = unpack(util:CreateChildren(SliderContainer, {
+    local SliderBar = util:CreateChildren(SliderContainer, {
       util:CreateObject("Frame", {
         BorderSizePixel = 0,
         Size = UDim2.new(1, -15, 0, 2),
@@ -1191,30 +1191,22 @@ do --Interactable
           BackgroundColor3 = theme.SliderBar,
           Name = "RightEnd",
         }),
-      }),
-      util:CreateObject("RoundedFrame", {
-        BorderSizePixel = 0,
-        Size = UDim2.new(0, 10, 0, 10),
-        Position = UDim2.new((self.value-values.min)/(values.max-values.min), -5, 0.5, -5),
-        ZIndex = 5,
-        BackgroundColor3 = theme.SliderBarValue,
-        Name = "SliderSelector"
       })
-    }))
+    })[1]
+
+    local SliderSelector = util:CreateObject("RoundedFrame", {
+      Parent = SliderBar,
+      BorderSizePixel = 0,
+      Size = UDim2.new(0, 10, 0, 10),
+      Position = UDim2.new((self.value-values.min)/(values.max-values.min), -5, 0.5, -5),
+      ZIndex = 5,
+      BackgroundColor3 = theme.SliderBarValue,
+      Name = "SliderSelector"
+    })
 
     local isHoldingSlider = false
-    local function customClamp(v, mi, ma)
-      if v < mi then
-        isHoldingSlider = false
-        return mi
-      elseif v > ma then
-        isHoldingSlider = false
-        return ma
-      end
-      return v
-    end
     local function updateSlider(mousePosX)
-      SliderSelector.Position = UDim2.new(customClamp(mousePosX - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X) / SliderBar.AbsoluteSize.X, -5, 0.5, -5)
+      SliderSelector.Position = UDim2.new(math.clamp(math.clamp(mousePosX - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1), -5, 0.5, -5)
     end
     local function endInput()
       isHoldingSlider = false
@@ -1227,7 +1219,7 @@ do --Interactable
     end
 
     SliderContainer.MouseButton1Down:Connect(function(x) updateSlider(x) isHoldingSlider = true end)
-    input.InputEnded:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseButton1 then endInput() end end)
+    input.InputEnded:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseButton1 and isHoldingSlider then endInput() end end)
     input.InputChanged:Connect(function(inp) if inp.UserInputType == Enum.UserInputType.MouseMovement and isHoldingSlider then updateSlider(inp.Position.X) end end)
 
     self.InteractableBuilder:_updateSize()
