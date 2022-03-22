@@ -1,69 +1,73 @@
-wait(0.1)
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Serophots/my-uilib/main/uilib_main.lua"))()
+UI = UI.init("Showcase", "v1.0.0", "Serophots", "SHOWCASE")
 
-local request = syn and syn.request or request
-local uiResponse = request({Url = "https://raw.githubusercontent.com/Serophots/my-uilib/main/uilib_main.lua", Method = "GET"}).Body
+local TabAim = UI:AddTab("Aim", "Silent Aim") do
+  local SectionSilentAim = TabAim:AddSection("Silent Aim") do
+
+		SectionSilentAim:AddButton({
+			title = "button",
+			callback = function() print("First button clicked") end,
+		})
+		SectionSilentAim:AddOneTimeClickButton({
+			title = "onebutton",
+			callback = function() print("One time click button clicked") end,
+		})
+
+		SectionSilentAim:AddLabel({
+			title = "Random label",
+		})
+
+		SectionSilentAim:AddToggle({
+			title = "toggle",
+			callback = function(v) print("Toggle callback", v) end,
+			checked = true,
+		})
+		SectionSilentAim:AddDropdown({
+			title = "dropdown",
+			placeholder = "Placeholder text",
+			options = {"one", "two", "three"},
+			callback = function(...) print("Dropdown callback", ...) end,
+			default = 1
+		})
+		SectionSilentAim:AddSlider({
+			title = "slider",
+			values = {min = 500, max = 1000, default = 750},
+			callback = function(v) print("Slider callback", v) end,
+			round = 1000, -- 3 decimal places
+		})
+		SectionSilentAim:AddKeybind({
+			title = "keybind",
+			default = Enum.KeyCode.Nine,
+			callback = function() print("Keybind clicked") end, --broken
+		})
 
 
-local uiS, UI = pcall(loadstring(uiResponse))
-if uiS then UI = UI.init("Example UI", "v1.0.0", "Serophots", "1") else error(UI) end
-
--- UI.init(title, version, author/creator, unique menu ID)    Creating another menu (through UI.init) will automatically destroy and replace any previous UI with the same ID
-
-
--- Interactable = A class which could be a button, toggle or any other element the user directly interacts wth
--- InteractableBuilder = A class which allows multiple interactables to be put together onto the same "line" in the menu.
-
-
--- Callbacks to various interactions
-function buttonCallback()
-	print("Button clicked!")
+		SectionSilentAim:AddButton({
+			title = "See toggle",
+			callback = function()
+      	print(UI.values["Aim"]["Silent Aim"].toggle) --UI.values.SectionName.Sub-SectionName."title" of interactable
+    	end
+		})
+		SectionSilentAim:AddButton({
+			title = "See dropdown",
+			callback = function()
+      	print(UI.values["Aim"]["Silent Aim"].dropdown) --UI.values.SectionName.Sub-SectionName."title" of interactable
+    	end
+		})
+		SectionSilentAim:AddButton({
+			title = "See slider",
+			callback = function()
+      	print(UI.values["Aim"]["Silent Aim"].slider) --UI.values.SectionName.Sub-SectionName."title" of interactable
+    	end
+		})
+		SectionSilentAim:AddButton({
+			title = "See keybind",
+			callback = function()
+      	print(UI.values["Aim"]["Silent Aim"].keybind) --UI.values.SectionName.Sub-SectionName."title" of interactable
+    	end
+		})
+  end
 end
-function toggleCallback(toggled)
-	print("Toggled", toggled)
-end
-function dropdownCallback(selected)
-	print("New selection", selected)
-	statusLabel.UpdateText("Current selected option : "..selected) --Update the status label's text after a new dropdown is selected
-end
-function keybindCallback(newKey)
-	if newKey == nil then
-		print("Key unbound")
-	else
-		print("New key", newKey.Name)
-	end
-end
 
-local tab1 = UI:AddTab("Tab 1", "Automate things") do
-	local FirstSection = tab1:AddSection("First Section") do
-		local one, two, three, four = unpack(FirstSection:AddButton("Click here", buttonCallback):AddButton("Click here", buttonCallback):AddButton("Click here", buttonCallback):AddLabel("Test").interactables)
-
-		--:AddButton (or any similar function which creates an "interactable") will return the interactable builder, allowing for more interactables to be added. Once we are done with our :AddButton() chain, we must get the `.interactables` property in order to retreive a table of each interactable we created. Unpack simply unpacks that table into several variables for each interactable we created
-
-
-
-		FirstSection:AddToggle("Test Toggle", toggleCallback, true):AddLabel("Stuck"):AddToggle("A new toggle", toggleCallback, false)
-		--We dont have to use the .interactables property if we're not assigning to a variable. 
-	end
-	
-	local SecondSection = tab1:AddSection("Second Section") do
-		local one = unpack(SecondSection:AddDropdown("A dropdown", "Placeholder Text", {"First option", "Second option"}, dropdownCallback):AddLabel("Hey").interactables)
-		statusLabel = unpack(SecondSection:AddLabel("Status").interactables)
-		SecondSection:AddKeybind("Keybind Test", Enum.KeyCode.F, keybindCallback)
-	end
-	
-	local newSection = tab1:AddSection("Filling space") do
-		newSection:AddOneTimeClickButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-	end
-	
-	local newSection = tab1:AddSection("Filling space") do
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-		newSection:AddButton("A button! How cute", buttonCallback)
-	end
-end
+--your script
+print(UI.values["Aim"]["Silent Aim"].slider)
