@@ -1112,9 +1112,12 @@ do --Interactable
   end
 
   function interactable:slider(data)--text, values, callback, round)
-    -- callback = callback and callback or EmptyFunction
-    local text, values, callback, round = data.title or "", data.values or {min=1,max=100,default=50}, data.callback or EmptyFunction, data.round or tostring
+    local text, values, callback = data.title or "", data.values or {min=1,max=100,default=50}, data.callback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
+
+    local function round(x)
+      return math.floor((x*data.round or 100)+0.5)/data.round or 100
+    end
 
     self.value = values.default
     GlobalTable[text] = self.value
