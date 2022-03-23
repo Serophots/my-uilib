@@ -2,6 +2,7 @@ print("UI Started loading")
 
 local input = game:GetService("UserInputService")
 local mouse = game.Players.LocalPlayer:GetMouse()
+local guiInset = game:GetService("GuiService"):GetGuiInset()
 
 local function EmptyFunction() end
 
@@ -91,6 +92,8 @@ local util = {} do
 
   function util:Centered(x, y) return UDim2.new(0.5, -(x/2), 0.5, -(y/2)) end
 
+  function util:VectorToOffsets(v) return UDim2.new(0, v.X, 0, v.Y) end
+
   function util:ListenForKeypress()
     local key
     repeat key = input.InputBegan:Wait() until key.UserInputType == Enum.UserInputType.Keyboard
@@ -164,48 +167,47 @@ do --Library class
 
     --Frame structure
     local TopBarContainer, ContentContainer = unpack(util:CreateChildren(MasterContainer, {
-        util:CreateObject("Frame", { --TopBarContainer
-          Size = UDim2.new(1, 0, 0, 40),
-          BackgroundColor3 = theme.SubFrameColor,
-          Name = "TopBarContainer",
-        }, { --TopBarContianer children
-          util:CreateObject("TextLabel", {
-            Size = UDim2.new(1, -12, 1, 0),
-            Position = UDim2.new(0, 12, -0.05, 0),
-            BackgroundTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextColor3 = theme.MainTextColor,
-            TextSize = 15,
-						Font = Enum.Font.GothamBold,
-            Text = title,
-            Name = "TopBarTitle",
-          }),
-          --Script Credit
-          util:CreateObject("TextLabel", {
-            Size = UDim2.new(1, -12, 0.3, 0),
-            Position = UDim2.new(0, 12, 0.7, 1),
-            BackgroundTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextColor3 = theme.SubTextColor,
-            TextSize = 13,
-						Font = Enum.Font.Gotham,
-            Text = "By "..owner,
-            Name = "TopBarTitle",
-          }),
-          --Version stuff
-          util:CreateObject("TextLabel", {
-            Size = UDim2.new(1, -4, 0.3, 0),
-            Position = UDim2.new(0, 0, 0, 5),
-            BackgroundTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Right,
-            TextColor3 = theme.SubTextColor,
-            TextSize = 13,
-						Font = Enum.Font.GothamBold,
-            Text = version,
-            Name = "TopBarTitle",
-          })
-        }
-      ),
+      util:CreateObject("Frame", { --TopBarContainer
+        Size = UDim2.new(1, 0, 0, 40),
+        BackgroundColor3 = theme.SubFrameColor,
+        Name = "TopBarContainer",
+      }, { --TopBarContianer children
+        util:CreateObject("TextLabel", {
+          Size = UDim2.new(1, -12, 1, 0),
+          Position = UDim2.new(0, 12, -0.05, 0),
+          BackgroundTransparency = 1,
+          TextXAlignment = Enum.TextXAlignment.Left,
+          TextColor3 = theme.MainTextColor,
+          TextSize = 15,
+          Font = Enum.Font.GothamBold,
+          Text = title,
+          Name = "TopBarTitle",
+        }),
+        --Script Credit
+        util:CreateObject("TextLabel", {
+          Size = UDim2.new(1, -12, 0.3, 0),
+          Position = UDim2.new(0, 12, 0.7, 1),
+          BackgroundTransparency = 1,
+          TextXAlignment = Enum.TextXAlignment.Left,
+          TextColor3 = theme.SubTextColor,
+          TextSize = 13,
+          Font = Enum.Font.Gotham,
+          Text = "By "..owner,
+          Name = "TopBarTitle",
+        }),
+        --Version stuff
+        util:CreateObject("TextLabel", {
+          Size = UDim2.new(1, -4, 0.3, 0),
+          Position = UDim2.new(0, 0, 0, 5),
+          BackgroundTransparency = 1,
+          TextXAlignment = Enum.TextXAlignment.Right,
+          TextColor3 = theme.SubTextColor,
+          TextSize = 13,
+          Font = Enum.Font.GothamBold,
+          Text = version,
+          Name = "TopBarTitle",
+        })
+      }),
       util:CreateObject("Frame", { --ContentContainer
         Position = UDim2.new(0, 0, 0, 40),
         Size = UDim2.new(1, 0, 1, -40),
@@ -226,8 +228,6 @@ do --Library class
         })
       }),
     }))
-    
-
     local TabSelectContainer, TabContentContainer = unpack(util:CreateChildren(ContentContainer, {
         util:CreateObject("RoundedFrame", { --TabSelectContainer
           Size = UDim2.new(0, 151, 1, -14),
@@ -242,6 +242,36 @@ do --Library class
           Name = "TabContentContainer",
         })
     }))
+
+    
+    --Draggability
+    local isDragging = false
+    local draggingOffset
+   
+    input.InputBegan:Connect(function(inp)
+      if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        local m = input:GetMouseLocation() - guiInset
+        local topLeft = MasterContainer.AbsolutePosition
+        local bottomRight = topLeft + Vector2.new(MasterContainer.AbsoluteSize.X, 40)
+
+        if m.X > topLeft.X and m.X < bottomRight.X then
+          if m.Y > topLeft.Y and m.Y < bottomRight.Y then
+            isDragging = true
+            draggingOffset = m - topLeft
+          end
+        end
+      end
+    end)
+    input.InputEnded:Connect(function(inp)
+      if isDragging and inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        isDragging = false
+      end
+    end)
+    input.InputChanged:Connect(function(inp)
+      if isDragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+        MasterContainer.Position = util:VectorToOffsets(input:GetMouseLocation() - draggingOffset - guiInset)
+      end
+    end)
 
     return setmetatable({
       MainContainer = MainContainer,
