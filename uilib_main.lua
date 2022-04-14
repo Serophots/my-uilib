@@ -1,4 +1,4 @@
-print("UI Started loading")
+--V1.0.0 by Serophots
 
 local input = game:GetService("UserInputService")
 local mouse = game.Players.LocalPlayer:GetMouse()

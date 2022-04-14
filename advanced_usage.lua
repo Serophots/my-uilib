@@ -1,4 +1,5 @@
 local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Serophots/my-uilib/main/uilib_main.lua"))()
+--V1.0.0 by Serophots
 UI = UI.init("Showcase", "v1.0.0", "Serophots", "SHOWCASE")
 
 local TabAim = UI:AddTab("Aim", "Silent Aim") do
