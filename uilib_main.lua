@@ -854,7 +854,7 @@ do --Interactable
         BackgroundColor3 = theme.InnerFrameColor,
         BorderColor3 = theme.ButtonClickedColor,
         BackgroundTransparency = 0,
-        Name = "InputBox",
+        Name = "DropdownInput",
       }, {
         util:CreateObject("TextBox", {
           Size = UDim2.new(1,-10,1,0),
@@ -891,7 +891,7 @@ do --Interactable
           Text = "\\/",
         })
       })
-    }, true))
+    }, true)) --exclude parent
     local DropdownInputBox = DropdownInput:FindFirstChildOfClass("TextBox")
 
     local SectionColorExtension,UIListLayout,_,DropdownMenuContainer = unpack(util:CreateObject("RoundedFrame", { --Extension of Section color
@@ -900,7 +900,8 @@ do --Interactable
       Size = UDim2.new(1,0,500,0),
       BackgroundColor3 = theme.InnerFrameColor,
       ZIndex = 10,
-      Visible = self.dropdownVisible
+      Visible = self.dropdownVisible,
+      Name = "SectionColorExtension"
     }, {
       util:CreateObject("UIListLayout", {
         VerticalAlignment = Enum.VerticalAlignment.Top,
@@ -957,12 +958,12 @@ do --Interactable
       })
     })
 
-    function updateVisibility(newVisibility)
+    local function updateVisibility(newVisibility)
       self.dropdownVisible = newVisibility
       SectionColorExtension.Visible = self.dropdownVisible
     end
 
-    function optionClicked(i, clicked)
+    local function optionClicked(i, clicked)
       self.selectedOption = i
       GlobalTable[text] = self.options[self.selectedOption]
       callback(clicked, i)
@@ -972,7 +973,7 @@ do --Interactable
       DropdownInputBox.Text = clicked
     end
 
-    function updateOptions(optionss)
+    local function updateOptions(optionss)
       if #optionss == 0 then updateVisibility(false) end
 
       for i,v in pairs(self.optionObjects) do v:Destroy() end
