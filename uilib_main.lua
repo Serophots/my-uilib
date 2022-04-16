@@ -667,8 +667,7 @@ do --Interactable
     return values[tab][section]
   end
 
-  function interactable:button(data)--text, callback)
-    -- callback = callback and callback or EmptyFunction
+  function interactable:button(data)
     local text, callback = data.title or "", data.callback or EmptyFunction
 
     local button = util:CreateObject("RoundedButton", {
@@ -707,8 +706,7 @@ do --Interactable
     return self
   end
 
-  function interactable:buttononetime(data)--text, callback)
-    -- callback = callback and callback or EmptyFunction
+  function interactable:buttononetime(data)
     local text, callback = data.title or "", data.callback or EmptyFunction
 
     local button = util:CreateObject("RoundedButton", {
@@ -749,8 +747,7 @@ do --Interactable
     return self
   end
 
-  function interactable:toggle(data)--text, callback, c)
-    -- callback = callback and callback or EmptyFunction
+  function interactable:toggle(data)
     local text, callback, c = data.title or "", data.callback or EmptyFunction, data.checked or false
     local GlobalTable = self:_GlobalTable()
     
@@ -829,8 +826,7 @@ do --Interactable
     return self
   end
 
-  function interactable:dropdown(data)--text, placeholder, options, callback, preselected)
-    -- callback = callback and callback or EmptyFunction
+  function interactable:dropdown(data)
     local text, placeholder, options, callback, preselected = data.title or "", data.placeholder or "", data.options or {}, data.callback or EmptyFunction, data.default
     local GlobalTable = self:_GlobalTable()
 
@@ -1045,8 +1041,7 @@ do --Interactable
     return self
   end
 
-  function interactable:keybind(data)--text, defaultKeybind, callback)
-    -- callback = callback and callback or EmptyFunction
+  function interactable:keybind(data)
     local text, defaultKeybind, callback = data.title or "", data.default, data.callback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
 
@@ -1142,7 +1137,7 @@ do --Interactable
     return self
   end
 
-  function interactable:slider(data)--text, values, callback, round)
+  function interactable:slider(data)
     local text, values, callback = data.title or "", data.values or {min=1,max=100,default=50}, data.callback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
 
@@ -1270,7 +1265,7 @@ do --Interactable
     return self
   end
 
-  function interactable:label(data)--text)
+  function interactable:label(data)
     local text = data.title or ""
 
     local textLabel = util:CreateObject("TextLabel", {
