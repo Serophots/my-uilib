@@ -890,14 +890,17 @@ do --Interactable
     }, true)) --exclude parent
     local DropdownInputBox = DropdownInput:FindFirstChildOfClass("TextBox")
 
-    local SectionColorExtension,UIListLayout,_,DropdownMenuContainer = unpack(util:CreateObject("RoundedFrame", { --Extension of Section color
+    
+    local SectionColorExtension,UIListLayout,_,DropdownMenuContainer = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
+      Size = UDim2.new(1,0,0,2000),
       Position = UDim2.new(0, 0, 1, 4),
-      Size = UDim2.new(1,0,500,0),
       BackgroundColor3 = theme.InnerFrameColor,
+      -- ScrollBarImageColor3 = theme.InnerFrameColor,
+      -- ScrollBarThickness = 4,
+      -- CanvasSize = UDim2.new(1, 0, 1, 0),
       ZIndex = 10,
       Visible = self.dropdownVisible,
-      Name = "SectionColorExtension"
     }, {
       util:CreateObject("UIListLayout", {
         VerticalAlignment = Enum.VerticalAlignment.Top,
@@ -909,12 +912,15 @@ do --Interactable
         BackgroundTransparency = 1,
         LayoutOrder = 1,
       }),
-      util:CreateObject("RoundedFrame", { --Extension of inner section color --DropdownMenuContainer
-        Size = UDim2.new(1, -14, 0, 0),
+      util:CreateObject("ScrollingFrame", { --Extension of inner section color --DropdownMenuContainer
+        Size = UDim2.new(1, -14, 0, 220),
         BackgroundColor3 = theme.InteractiveBackColor,
         LayoutOrder = 2,
         ZIndex = 10,
-        Name = "DropdownMenuContainer"
+        Name = "DropdownMenuContainer",
+        ScrollBarImageColor3 = theme.InnerFrameColor,
+        ScrollBarThickness = 4,
+        CanvasSize = UDim2.new(1, 0, 1, 0),
       }, {
         util:CreateObject("UIListLayout", { --Sorts all dropdown items
           VerticalAlignment = Enum.VerticalAlignment.Top,
@@ -957,6 +963,14 @@ do --Interactable
     local function updateVisibility(newVisibility)
       self.dropdownVisible = newVisibility
       SectionColorExtension.Visible = self.dropdownVisible
+      if newVisibility then
+        --//Room to scroll
+        --//MAKE THIS A HECK OF A LOT BETTER. IT *IS* POSSIBLE TO CALCULATE.
+        --TODO
+        self.InteractableBuilder.section.SectionContainer.Parent.CanvasSize = UDim2.new(0, 0, 5, 0)
+      else
+        self.InteractableBuilder.section:_updateSize()
+      end
     end
 
     local function optionClicked(i, clicked)
@@ -989,7 +1003,8 @@ do --Interactable
       end
 
       self.options = optionss
-      DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
+      -- DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
+      DropdownMenuContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
     end
     updateOptions(options)
     
