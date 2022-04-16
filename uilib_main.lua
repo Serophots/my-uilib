@@ -805,7 +805,7 @@ do --Interactable
     end
     updateCheck()
     
-    function toggle()
+    local function toggle()
       self.checked = not self.checked
       GlobalTable[text] = self.checked
       callback(self.checked)
@@ -1096,14 +1096,14 @@ do --Interactable
       })
     }, true))
 
-    function updateKeybindBoxSize()
+    local function updateKeybindBoxSize()
       KeybindBox.Size = UDim2.new(0, KeybindBox.TextBounds.X+10, 0, 27-12)
       KeybindBox.Position = UDim2.new(1, -KeybindBox.Size.X.Offset-6, 0, 6)
     end
     updateKeybindBoxSize()
     KeybindBox:GetPropertyChangedSignal("Text"):Connect(updateKeybindBoxSize)
 
-    function ListenForNewKey()
+    local function ListenForNewKey()
       KeybindBox.Text = "Listening..."
       self.key = nil
       GlobalTable[text] = self.key
@@ -1121,7 +1121,7 @@ do --Interactable
       util:GetLocalCharacter("Humanoid").WalkSpeed = prevWS
     end
 
-    function SetKey(newKey)
+    local function SetKey(newKey)
       self.key = newKey
       GlobalTable[text] = self.key
       KeybindBox.Text = self.key.Name
