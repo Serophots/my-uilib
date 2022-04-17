@@ -119,7 +119,21 @@ local util = {} do
   end
 end
 
---Classes
+--// Keybinds
+local keybindBindings = {}
+local keybindFunctions = {}
+local function keybindConnection(inp) --connected in library init
+  if inp.UserInputType == Enum.UserInputType.Keyboard then
+    for i,v in pairs(keybindBindings) do
+      if inp.KeyCode == v then
+        keybindFunctions[i]()
+        -- dont break
+      end
+    end
+  end
+end
+
+--// Classes
 local library = {}
 library.__index = library
 local tab = {}
@@ -243,6 +257,8 @@ do --Library class
         })
     }))
 
+    --// All keybinds
+    local conn4 = input.InputBegan:Connect(keybindConnection)
     
     --Draggability
     local isDragging = false
@@ -1058,11 +1074,18 @@ do --Interactable
   end
 
   function interactable:keybind(data)
-    local text, defaultKeybind, callback = data.title or "", data.default, data.callback or EmptyFunction
+    local text, defaultKeybind, callback, changeCallback = data.title or "", data.default, data.callback or EmptyFunction, data.changeCallback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
 
     self.key = defaultKeybind
     GlobalTable[text] = self.key
+    self.bindingsIndex = #keybindBindings+1
+
+    local function SetBindings(newKey)
+      keybindBindings[self.bindingsIndex] = newKey
+      keybindFunctions[self.bindingsIndex] = callback
+    end
+    SetBindings(self.key)
 
     local _,KeybindBox = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -1107,38 +1130,35 @@ do --Interactable
       })
     }, true))
 
+    local function SetKey(newKey)
+      self.key = newKey
+      GlobalTable[text] = self.key
+      KeybindBox.Text = self.key.Name
+      changeCallback(self.key)
+      SetBindings(self.key)
+    end
+    
+    local function ListenForNewKey()
+      KeybindBox.Text = "Listening..."
+      self.key = nil
+      GlobalTable[text] = self.key
+      SetBindings(self.key)
+
+      local prevWS = util:GetLocalCharacter("Humanoid").WalkSpeed or 0
+      util:GetLocalCharacter("Humanoid").WalkSpeed = 0 -- /shrug pretty lazzy but it works
+
+      SetKey(util:ListenForKeypress().KeyCode)
+
+      wait(0.1)
+      util:GetLocalCharacter("Humanoid").WalkSpeed = prevWS
+    end
+
     local function updateKeybindBoxSize()
       KeybindBox.Size = UDim2.new(0, KeybindBox.TextBounds.X+10, 0, 27-12)
       KeybindBox.Position = UDim2.new(1, -KeybindBox.Size.X.Offset-6, 0, 6)
     end
     updateKeybindBoxSize()
     KeybindBox:GetPropertyChangedSignal("Text"):Connect(updateKeybindBoxSize)
-
-    local function ListenForNewKey()
-      KeybindBox.Text = "Listening..."
-      self.key = nil
-      GlobalTable[text] = self.key
-      callback(self.key)
-
-      local prevWS = util:GetLocalCharacter("Humanoid").WalkSpeed or 0
-      util:GetLocalCharacter("Humanoid").WalkSpeed = 0 -- /shrug pretty lazzy but it works
-
-      self.key = util:ListenForKeypress().KeyCode
-      GlobalTable[text] = self.key
-      KeybindBox.Text = self.key.Name
-      callback(self.key)
-
-      wait(0.1)
-      util:GetLocalCharacter("Humanoid").WalkSpeed = prevWS
-    end
-
-    local function SetKey(newKey)
-      self.key = newKey
-      GlobalTable[text] = self.key
-      KeybindBox.Text = self.key.Name
-      callback(self.key)
-    end
-
     KeybindBox.MouseButton1Click:Connect(ListenForNewKey)
     
     self.InteractableBuilder:_updateSize()
