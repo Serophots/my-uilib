@@ -936,6 +936,8 @@ do --Interactable
       })
     }, true, true))
 
+    local DropdownMenuContainerUIListLayout = DropdownMenuContainer:FindFirstChildOfClass("UIListLayout")
+
     local TemplateDropdownOption = util:CreateObject("RoundedButton", {
       Size = UDim2.new(1, -14, 0, 16),
       BorderSizePixel = 1,
@@ -1003,8 +1005,7 @@ do --Interactable
       end
 
       self.options = optionss
-      -- DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
-      DropdownMenuContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
+      DropdownMenuContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownMenuContainerUIListLayout.AbsoluteContentSize.Y+7)
     end
     updateOptions(options)
     
