@@ -176,8 +176,13 @@ do --Library class
       })
     }, true)[1]
 
-    if getgenv()[id] then getgenv()[id]:Destroy() end
+    if getgenv()[id] then
+      for i,v in pairs(getgenv()[id.."_conns"]) do v:Disconnect() end
+      getgenv()[id]:Destroy()
+    end
     getgenv()[id] = MasterContainer.Parent
+    getgenv()[id.."_conns"] = table.create(5) --//rough figure
+    --//Conn set in initKeybind() below
 
     --Frame structure
     local TopBarContainer, ContentContainer = unpack(util:CreateChildren(MasterContainer, {
@@ -264,7 +269,7 @@ do --Library class
     local isDragging = false
     local draggingOffset
    
-    input.InputBegan:Connect(function(inp)
+    local conn1 = input.InputBegan:Connect(function(inp)
       if inp.UserInputType == Enum.UserInputType.MouseButton1 then
         local m = input:GetMouseLocation() - guiInset
         local topLeft = MasterContainer.AbsolutePosition
@@ -278,16 +283,20 @@ do --Library class
         end
       end
     end)
-    input.InputEnded:Connect(function(inp)
+    local conn2 = input.InputEnded:Connect(function(inp)
       if isDragging and inp.UserInputType == Enum.UserInputType.MouseButton1 then
         isDragging = false
       end
     end)
-    input.InputChanged:Connect(function(inp)
+    local conn3 = input.InputChanged:Connect(function(inp)
       if isDragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
         MasterContainer.Position = util:VectorToOffsets(input:GetMouseLocation() - draggingOffset - guiInset)
       end
     end)
+    table.insert(getfenv()[id.."_conns"], conn1)
+    table.insert(getfenv()[id.."_conns"], conn2)
+    table.insert(getfenv()[id.."_conns"], conn3)
+    table.insert(getfenv()[id.."_conns"], conn4)
 
     return setmetatable({
       MainContainer = MainContainer,
