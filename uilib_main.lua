@@ -122,8 +122,8 @@ end
 --// Keybinds
 local keybindBindings = {}
 local keybindFunctions = {}
-local function keybindConnection(inp) --connected in library init
-  if inp.UserInputType == Enum.UserInputType.Keyboard then
+local function keybindConnection(inp, gpe) --connected in library init
+  if inp.UserInputType == Enum.UserInputType.Keyboard and not gpe then
     for i,v in pairs(keybindBindings) do
       if inp.KeyCode == v then
         keybindFunctions[i]()
