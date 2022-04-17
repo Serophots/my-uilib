@@ -39,7 +39,18 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 		SectionSilentAim:AddKeybind({
 			title = "keybind",
 			default = Enum.KeyCode.Nine,
-			callback = function() print("Keybind clicked") end, --broken
+			callback = function() print("Keybind clicked") end,
+			changeCallback = function(new) print("Keybind changed", new.Name) end,
+		})
+
+		
+		SectionSilentAim:AddKeybind({ --// GUI keybind change
+			title = "GUI keybind",
+			default = Enum.KeyCode.LeftControl,
+			changeCallback = function(new)
+				UI:SetKeybind(new)
+				print(UI.keybind)
+			end,
 		})
 
 
@@ -69,6 +80,26 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 		})
   end
 end
+
+--other cool things
+
+
+--[[
+
+Some functions
+
+UI:ToggleGUI(true/false) to set visible/invisible
+or
+UI:ToggleGUI() to simply toggle
+
+UI:SetKeybind(Enum.KeyCode.Something) to set the keybind
+and
+print(UI.keybind) to get current GUI keybind
+
+]]
+
+
+
 
 --your script
 print(UI.values["Aim"]["Silent Aim"].slider)

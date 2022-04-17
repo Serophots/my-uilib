@@ -172,6 +172,7 @@ do --Library class
         Size = util:Offsets(510, 430),
         Position = util:Centered(510, 430),
         BackgroundColor3 = theme.BackColor,
+        ClipsDescendants = true,
         Name = "ScreenGui"
       })
     }, true)[1]
@@ -299,13 +300,16 @@ do --Library class
     table.insert(getfenv()[id.."_conns"], conn4)
 
     return setmetatable({
+      MasterContainer = MasterContainer,
       MainContainer = MainContainer,
       TabsSelectContainer = TabSelectContainer,
       TabsContentContainer = TabContentContainer,
       tabs = {},
       values = {}, --UI.values.tab.section["a toggle"] = its current set value
       selectedTab = 1,
-    }, library)
+      keybind = Enum.KeyCode.LeftControl,
+      isVisible = true,
+    }, library):_initKeybind(id) --botchy?
   end
 
   function library:AddTab(title, desc)
@@ -319,6 +323,42 @@ do --Library class
     end
 
     return newTab
+  end
+
+  function library:_initKeybind(id)
+    --// GUI Keybind
+    local stop = false
+    table.insert(getfenv()[id.."_conns"], input.InputBegan:Connect(function(inp)
+      if inp.UserInputType == Enum.UserInputType.Keyboard then
+        if inp.KeyCode == self.keybind and not stop then
+          stop = true
+          self:ToggleGUI()
+          wait(0.2)
+          stop = false
+        end
+      end
+    end))
+    return self
+  end
+
+  function library:_HideGUI()
+    self.MasterContainer:TweenSize(util:Offsets(510,0), "In", "Quad", 0.2, true)
+  end
+  
+  function library:_ShowGUI()
+    self.MasterContainer:TweenSize(util:Offsets(510, 430), "Out", "Quad", 0.2, true)
+  end
+
+
+  function library:ToggleGUI(yesno)
+    self.isVisible = (yesno == nil) and (not self.isVisible) or yesno
+    if self.isVisible then self:_ShowGUI() else self:_HideGUI() end
+    return self.isVisible
+  end
+
+  function library:SetKeybind(new)
+    self.keybind = new
+    return self.keybind
   end
 end
 
