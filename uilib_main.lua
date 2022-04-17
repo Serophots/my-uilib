@@ -6,7 +6,7 @@ local guiInset = game:GetService("GuiService"):GetGuiInset()
 
 local function EmptyFunction() end
 
---Utilities
+--// Utilities
 local util = {} do 
   local letters = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
   function util.RandomString(length)
@@ -170,7 +170,7 @@ do --Library class
     local MasterContainer = util:CreateObject("ScreenGui", { Parent = game:GetService("CoreGui") }, {
       util:CreateObject("RoundedFrame", {
         Size = util:Offsets(510, 430),
-        Position = util:Centered(510, 430), --UDim2.new(0.5, -(510/2), 0.5, -(430/2)),
+        Position = util:Centered(510, 430),
         BackgroundColor3 = theme.BackColor,
         Name = "ScreenGui"
       })
@@ -248,24 +248,24 @@ do --Library class
       }),
     }))
     local TabSelectContainer, TabContentContainer = unpack(util:CreateChildren(ContentContainer, {
-        util:CreateObject("RoundedFrame", { --TabSelectContainer
-          Size = UDim2.new(0, 151, 1, -14),
-          Position = util:Offsets(7, 7), --Padding
-          BackgroundColor3 = theme.SubFrameColor,
-          Name = "TabSelectContainer"
-        }),
-        util:CreateObject("RoundedFrame", { --TabContentContainer
-          Size = UDim2.new(0, 336, 1, -14),
-          Position = util:Offsets(167, 7),
-          BackgroundColor3 = theme.SubFrameColor,
-          Name = "TabContentContainer",
-        })
+      util:CreateObject("RoundedFrame", { --TabSelectContainer
+        Size = UDim2.new(0, 151, 1, -14),
+        Position = util:Offsets(7, 7), --Padding
+        BackgroundColor3 = theme.SubFrameColor,
+        Name = "TabSelectContainer"
+      }),
+      util:CreateObject("RoundedFrame", { --TabContentContainer
+        Size = UDim2.new(0, 336, 1, -14),
+        Position = util:Offsets(167, 7),
+        BackgroundColor3 = theme.SubFrameColor,
+        Name = "TabContentContainer",
+      })
     }))
 
     --// All keybinds
     local conn4 = input.InputBegan:Connect(keybindConnection)
     
-    --Draggability
+    --// Draggability
     local isDragging = false
     local draggingOffset
    
