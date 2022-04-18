@@ -899,7 +899,7 @@ do --Interactable
     self.optionObjects = {}
     self.dropdownVisible = false
     self.selectedOption = preselected or 0 --Index of options table
-    -- GlobalTable[text] = self.options[self.selectedOption]
+    GlobalTable[text] = self.options[self.selectedOption]
 
     local DropdownInput, DropdownMenuToggle = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
