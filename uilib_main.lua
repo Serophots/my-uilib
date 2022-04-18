@@ -1041,14 +1041,16 @@ do --Interactable
     end
 
     local function optionClicked(index)
-      local clicked = self.options[index]
       self.selectedOption = index
-      GlobalTable[text] = clicked
-      callback(clicked, index)
-      updateVisibility(false)
+      if index ~= 0 then
+        local clicked = self.options[index]
+        GlobalTable[text] = clicked
+        callback(clicked, index)
+        updateVisibility(false)
 
-      DropdownInputBox:ReleaseFocus()
-      DropdownInputBox.Text = clicked
+        DropdownInputBox:ReleaseFocus()
+        DropdownInputBox.Text = clicked
+      end
     end
     optionClicked(preselected or 0)
 
