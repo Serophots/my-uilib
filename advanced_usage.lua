@@ -4,7 +4,6 @@ UI = UI.init("Showcase", "v1.0.0", "Serophots", "SHOWCASE")
 
 local TabAim = UI:AddTab("Aim", "Silent Aim") do
   local SectionSilentAim = TabAim:AddSection("Silent Aim") do
-
 		SectionSilentAim:AddButton({
 			title = "button",
 			callback = function() print("First button clicked") end,
@@ -57,26 +56,26 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 		SectionSilentAim:AddButton({
 			title = "See toggle",
 			callback = function()
-      	print(UI.values["Aim"]["Silent Aim"].toggle) --UI.values.SectionName.Sub-SectionName."title" of interactable
-    	end
+				print(UI.values["Aim"]["Silent Aim"].toggle) --UI.values.SectionName.Sub-SectionName."title" of interactable
+			end
 		})
 		SectionSilentAim:AddButton({
 			title = "See dropdown",
 			callback = function()
-      	print(UI.values["Aim"]["Silent Aim"].dropdown) --UI.values.SectionName.Sub-SectionName."title" of interactable
-    	end
+				print(UI.values["Aim"]["Silent Aim"].dropdown) --UI.values.SectionName.Sub-SectionName."title" of interactable
+			end
 		})
 		SectionSilentAim:AddButton({
 			title = "See slider",
 			callback = function()
-      	print(UI.values["Aim"]["Silent Aim"].slider) --UI.values.SectionName.Sub-SectionName."title" of interactable
-    	end
+				print(UI.values["Aim"]["Silent Aim"].slider) --UI.values.SectionName.Sub-SectionName."title" of interactable
+			end
 		})
 		SectionSilentAim:AddButton({
 			title = "See keybind",
 			callback = function()
-      	print(UI.values["Aim"]["Silent Aim"].keybind) --UI.values.SectionName.Sub-SectionName."title" of interactable
-    	end
+				print(UI.values["Aim"]["Silent Aim"].keybind) --UI.values.SectionName.Sub-SectionName."title" of interactable
+			end
 		})
   end
 end

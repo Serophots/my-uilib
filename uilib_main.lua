@@ -899,7 +899,7 @@ do --Interactable
     self.optionObjects = {}
     self.dropdownVisible = false
     self.selectedOption = preselected or 0 --Index of options table
-    GlobalTable[text] = self.options[self.selectedOption]
+    -- GlobalTable[text] = self.options[self.selectedOption]
 
     local DropdownInput, DropdownMenuToggle = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -1040,15 +1040,17 @@ do --Interactable
       end
     end
 
-    local function optionClicked(i, clicked)
-      self.selectedOption = i
-      GlobalTable[text] = self.options[self.selectedOption]
-      callback(clicked, i)
+    local function optionClicked(index)
+      local clicked = self.options[index]
+      self.selectedOption = index
+      GlobalTable[text] = clicked
+      callback(clicked, index)
       updateVisibility(false)
 
       DropdownInputBox:ReleaseFocus()
       DropdownInputBox.Text = clicked
     end
+    optionClicked(preselected or 0)
 
     local function updateOptions(optionss)
       if #optionss == 0 then updateVisibility(false) end
