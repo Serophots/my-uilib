@@ -908,6 +908,7 @@ do --Interactable
   end
 
   function interactable:dropdown(data)
+    local callback = data.callback or EmptyFunction
     local GlobalTable = self:_GlobalTable()
 
     local ISPLAYERS = (data.options == "players")
@@ -1059,7 +1060,7 @@ do --Interactable
       self.selectedOptionObj = clicked
 
       GlobalTable[data.title] = clicked
-      if not setDefault then data.callback(clicked) end
+      if not setDefault then callback(clicked) end
 
       DropdownInputBox.Text = text or ""
     end
