@@ -1069,7 +1069,7 @@ do --Interactable
       if #options == 0 then updateVisibility(false) end
 
       --//Destroy current options
-      for _,v in pairs(self.optionObjects) do v:Destroy() end
+      for i,_ in pairs(self.optionObjects) do i:Destroy() end
       self.optionObjects = {}
 
       local count = 1
@@ -1095,7 +1095,7 @@ do --Interactable
           updateVisibility(false)
         end)
 
-        table.insert(self.optionObjects, OptionContainer)
+        self.optionObjects[OptionContainer] = text
         count=count+1
       end
 
@@ -1121,8 +1121,9 @@ do --Interactable
 
     DropdownInputBox:GetPropertyChangedSignal("Text"):Connect(function()
       local newText = DropdownInputBox.Text
-      for i, option in pairs(self.optionObjects) do
-        option.Visible = newText:lower() == self.selectedOptionText:lower():sub(1, #newText)
+
+      for option, text in pairs(self.optionObjects) do
+        option.Visible = newText:lower() == text:lower():sub(1, #newText)
       end
 
       DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
