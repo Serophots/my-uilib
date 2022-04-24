@@ -29,6 +29,18 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 			callback = function(...) print("Dropdown callback", ...) end,
 			default = 1
 		})
+		SectionSilentAim:AddDropdown({
+			title = "dropdown",
+			placeholder = "Placeholder text",
+			options = {["text to show"]:"value to be callbacked", "two", "three"},
+			callback = function(...) print("Dropdown callback", ...) end,
+		})
+		SectionSilentAim:AddDropdown({
+			title = "dropdown",
+			placeholder = "Placeholder text",
+			options = "players", --built in players dropdpown, auto-updates, includes displaynames, etc
+			callback = function(...) print("Dropdown callback", ...) end,
+		})
 		SectionSilentAim:AddSlider({
 			title = "slider",
 			values = {min = 500, max = 1000, default = 750},

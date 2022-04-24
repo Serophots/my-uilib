@@ -133,6 +133,24 @@ local function keybindConnection(inp, gpe) --connected in library init
   end
 end
 
+--// Players dropdowns
+local PlayerDropdowns = {}
+local PlayerList = {}
+local function updatePlayerList()
+  PlayerList = {}
+  for _,p in pairs(game.Players:GetPlayers()) do
+    PlayerList[p.DisplayName] = p
+    PlayerList[p.Name] = p
+  end
+  for _,v in pairs(PlayerDropdowns) do
+    print("calling", v.setOptions)
+    v.setOptions(PlayerList)
+  end
+end
+updatePlayerList()
+game.Players.PlayerAdded:Connect(updatePlayerList)
+game.Players.PlayerRemoving:Connect(updatePlayerList)
+
 --// Classes
 local library = {}
 library.__index = library
@@ -348,7 +366,6 @@ do --Library class
   function library:_ShowGUI()
     self.MasterContainer:TweenSize(util:Offsets(510, 430), "Out", "Quad", 0.2, true)
   end
-
 
   function library:ToggleGUI(yesno)
     self.isVisible = (yesno == nil) and (not self.isVisible) or yesno
@@ -870,8 +887,8 @@ do --Interactable
     local function toggle()
       self.checked = not self.checked
       GlobalTable[text] = self.checked
-      callback(self.checked)
       updateCheck()
+      callback(self.checked)
     end
 
     checkbox.MouseButton1Click:Connect(toggle)
@@ -892,14 +909,15 @@ do --Interactable
   end
 
   function interactable:dropdown(data)
-    local text, placeholder, options, callback, preselected = data.title or "", data.placeholder or "", data.options or {}, data.callback or EmptyFunction, data.default
     local GlobalTable = self:_GlobalTable()
 
-    self.options = options
+    local ISPLAYERS = (data.options == "players")
+    if ISPLAYERS then
+      self.options = PlayerList
+    else
+      self.options = data.options or {}
+    end
     self.optionObjects = {}
-    self.dropdownVisible = false
-    self.selectedOption = preselected or 0 --Index of options table
-    GlobalTable[text] = self.options[self.selectedOption]
 
     local DropdownInput, DropdownMenuToggle = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
@@ -925,7 +943,7 @@ do --Interactable
           TextSize = 10,
           TextXAlignment = Enum.TextXAlignment.Left,
           Font = Enum.Font.GothamBold,
-          PlaceholderText = placeholder,
+          PlaceholderText = data.placeholder or "",
           Text = "",
           PlaceholderColor3 = theme.SubTextColor,
           ClipsDescendants = true,
@@ -953,9 +971,6 @@ do --Interactable
         })
       })
     }, true)) --exclude parent
-    local DropdownInputBox = DropdownInput:FindFirstChildOfClass("TextBox")
-
-    
     local SectionColorExtension,UIListLayout,_,DropdownMenuContainer = unpack(util:CreateObject("RoundedFrame", {
       Parent = self.InteractableContainer,
       Size = UDim2.new(1,0,0,2000),
@@ -1000,9 +1015,6 @@ do --Interactable
         }),
       })
     }, true, true))
-
-    local DropdownMenuContainerUIListLayout = DropdownMenuContainer:FindFirstChildOfClass("UIListLayout")
-
     local TemplateDropdownOption = util:CreateObject("RoundedButton", {
       Size = UDim2.new(1, -14, 0, 16),
       BorderSizePixel = 1,
@@ -1026,6 +1038,8 @@ do --Interactable
         ZIndex = 10,
       })
     })
+    local DropdownInputBox = DropdownInput:FindFirstChildOfClass("TextBox")
+    local DropdownMenuContainerUIListLayout = DropdownMenuContainer:FindFirstChildOfClass("UIListLayout")
 
     local function updateVisibility(newVisibility)
       self.dropdownVisible = newVisibility
@@ -1039,44 +1053,57 @@ do --Interactable
         self.InteractableBuilder.section:_updateSize()
       end
     end
+    updateVisibility(false)
 
-    local function optionClicked(index)
-      self.selectedOption = index
-      if index ~= 0 then
-        local clicked = self.options[index]
-        GlobalTable[text] = clicked
-        callback(clicked, index)
-        updateVisibility(false)
+    local function optionClicked(clicked, text, setDefault)
+      self.selectedOptionText = text
+      self.selectedOptionObj = clicked
 
-        DropdownInputBox:ReleaseFocus()
-        DropdownInputBox.Text = clicked
-      end
+      GlobalTable[data.title] = clicked
+      if not setDefault then data.callback(clicked) end
+
+      DropdownInputBox.Text = text or ""
     end
-    optionClicked(preselected or 0)
 
-    local function updateOptions(optionss)
-      if #optionss == 0 then updateVisibility(false) end
+    local function updateOptions(options, first) -- options = {"opt1", "opt2"} or {"text" = obj}
+      if #options == 0 then updateVisibility(false) end
+      print("Updating options", options)
 
-      for i,v in pairs(self.optionObjects) do v:Destroy() end
+      --//Destroy current options
+      for _,v in pairs(self.optionObjects) do v:Destroy() end
       self.optionObjects = {}
 
-      for i, option in pairs(optionss) do
+      local count = 1
+      for i, v in pairs(options) do
+        local text, clicked = v, v
+        if type(i) ~= "number" then
+          text, clicked = i, v
+        end
+
+        --//default
+        if first and (data.default == text or data.default == clicked or data.default == count) then
+          optionClicked(clicked, text, true)
+        end
+
         local OptionContainer = TemplateDropdownOption:Clone()
         OptionContainer.Parent = DropdownMenuContainer
-        OptionContainer.LayoutOrder = i
-
+        OptionContainer.LayoutOrder = count
         local OptionText = OptionContainer:FindFirstChildOfClass("TextLabel")
-        OptionText.Text = option
+        OptionText.Text = text
 
-        OptionContainer.MouseButton1Click:Connect(function() optionClicked(i, option) end)
+        OptionContainer.MouseButton1Click:Connect(function()
+          optionClicked(clicked, text, false)
+          updateVisibility(false)
+        end)
 
         table.insert(self.optionObjects, OptionContainer)
+        count=count+1
       end
 
-      self.options = optionss
+      self.options = options
       DropdownMenuContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownMenuContainerUIListLayout.AbsoluteContentSize.Y+7)
     end
-    updateOptions(options)
+    updateOptions(self.options, true)
     
     DropdownMenuToggle.MouseButton1Click:Connect(function()
       updateVisibility(not self.dropdownVisible)
@@ -1084,33 +1111,21 @@ do --Interactable
     end)
 
     DropdownInputBox.Focused:Connect(function()
-      if DropdownInputBox.Text == self.options[self.selectedOption] then
-        DropdownInputBox.Text = ""
-        self.selectedOption = 0
-        GlobalTable[text] = self.options[self.selectedOption]
-        callback("", 0)
-      end
-
+      DropdownInputBox.Text = ""
       updateVisibility(true)
     end)
 
     DropdownInputBox.FocusLost:Connect(function()
       wait(0.1)
-      if DropdownInputBox.Text ~= self.options[self.selectedOption] then
-        self.selectedOption = 0
-        GlobalTable[text] = self.options[self.selectedOption]
-        callback("", 0)
-      end
-
       updateVisibility(false)
     end)
 
     DropdownInputBox:GetPropertyChangedSignal("Text"):Connect(function()
       local newText = DropdownInputBox.Text
-
       for i, option in pairs(self.optionObjects) do
-        option.Visible = newText:lower() == self.options[i]:lower():sub(1, #newText)
+        option.Visible = newText:lower() == tostring(self.options[i]):lower():sub(1, #newText)
       end
+
       DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
     end)
 
@@ -1123,6 +1138,9 @@ do --Interactable
       setOptions = updateOptions,
       setMenuOpen = updateVisibility,
     }
+    if ISPLAYERS then
+      table.insert(PlayerDropdowns, self.returns)
+    end
     return self
   end
 
