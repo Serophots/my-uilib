@@ -143,7 +143,6 @@ local function updatePlayerList()
     PlayerList[p.Name] = p
   end
   for _,v in pairs(PlayerDropdowns) do
-    print("calling", v.setOptions)
     v.setOptions(PlayerList)
   end
 end
@@ -1067,7 +1066,6 @@ do --Interactable
 
     local function updateOptions(options, first) -- options = {"opt1", "opt2"} or {"text" = obj}
       if #options == 0 then updateVisibility(false) end
-      print("Updating options", options)
 
       --//Destroy current options
       for _,v in pairs(self.optionObjects) do v:Destroy() end
