@@ -1122,7 +1122,7 @@ do --Interactable
     DropdownInputBox:GetPropertyChangedSignal("Text"):Connect(function()
       local newText = DropdownInputBox.Text
       for i, option in pairs(self.optionObjects) do
-        option.Visible = newText:lower() == tostring(self.options[i]):lower():sub(1, #newText)
+        option.Visible = newText:lower() == self.selectedOptionText:lower():sub(1, #newText)
       end
 
       DropdownMenuContainer.Size = UDim2.new(1, -14, 0, DropdownMenuContainer:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y+7)
