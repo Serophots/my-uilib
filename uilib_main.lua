@@ -325,7 +325,7 @@ do --Library class
       tabs = {},
       values = {}, --UI.values.tab.section["a toggle"] = its current set value
       selectedTab = 1,
-      keybind = Enum.KeyCode.LeftControl,
+      keybind = Enum.KeyCode.RightControl,
       isVisible = true,
     }, library):_initKeybind(id) --botchy?
   end
