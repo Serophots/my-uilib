@@ -1374,13 +1374,14 @@ do --Interactable
 
   function interactable:label(data)
     local text = data.title or ""
+    local XAlignment = data.XAlignment or Enum.TextXAlignment.Center
 
     local textLabel = util:CreateObject("TextLabel", {
       Parent = self.InteractableContainer,
       Position = UDim2.new(0, 7, 0, 0),
       Size = UDim2.new(1, -14, 1, 0),
       BackgroundTransparency = 1,
-      TextXAlignment = Enum.TextXAlignment.Center,
+      TextXAlignment = XAlignment,
       TextYAlignment = Enum.TextYAlignment.Center,
       TextColor3 = theme.SubTextColor,
       TextSize = 12,
@@ -1395,7 +1396,9 @@ do --Interactable
     self.returns = {
       interactable = self,
       text = text,
-      UpdateText = function(text) textLabel.Text = text end
+      UpdateText = function(newText)
+        textLabel.Text = newText
+      end
     }
     return self
   end
