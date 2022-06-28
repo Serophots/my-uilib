@@ -1249,7 +1249,7 @@ do --Interactable
     local GlobalTable = self:_GlobalTable()
 
     local function round(x)
-      return math.floor((x*data.round or 100)+0.5)/data.round or 100
+      return math.floor((x*(data.round or 100))+0.5)/(data.round or 100)
     end
 
     self.value = values.default
@@ -1397,6 +1397,7 @@ do --Interactable
       interactable = self,
       text = text,
       UpdateText = function(newText)
+        print("Updating", textLabel, newText)
         textLabel.Text = newText
       end
     }
