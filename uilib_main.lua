@@ -919,7 +919,9 @@ do --Interactable
         self.checked = i
         GlobalTable[text] = self.checked
         updateCheck()
+        callback(self.checked)
       end,
+      callback = callback,
     }
     return self
   end
@@ -1154,6 +1156,7 @@ do --Interactable
       options = options,
       setOptions = updateOptions,
       setMenuOpen = updateVisibility,
+      callback = callback
     }
     if ISPLAYERS then
       table.insert(PlayerDropdowns, self.returns)
@@ -1257,6 +1260,8 @@ do --Interactable
       key = self.key,
       SetKey = SetKey,
       ListenForNewKey = ListenForNewKey,
+      callback = callback,
+      changeKeyCallback = changeCallback
     }
     return self
   end
@@ -1384,7 +1389,8 @@ do --Interactable
       SetValue = function(newValue)
         SliderSelector.Position = UDim2.new(0, math.clamp((newValue-values.min)/(values.max-values.min), 0, 1) * SliderBar.AbsoluteSize.X, 0.5, -5)
         endInput()
-      end
+      end,
+      callback = callback
     }
     return self
   end
