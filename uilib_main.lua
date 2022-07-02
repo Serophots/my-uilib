@@ -665,6 +665,7 @@ do --InteractableBuilder
     return setmetatable({
       section = section,
       interactables = {},
+      interactable = nil,
       InteractableBuilderContainer = InteractableBuilderContainer,
     }, interactableBuilder)
   end
@@ -680,41 +681,57 @@ do --InteractableBuilder
   end
 
   function interactableBuilder:AddButton(data)
-    table.insert(self.interactables, interactable.new(self):button(data).returns)
+    local button = interactable.new(self):button(data).returns
+    table.insert(self.interactables, button)
+    self.interactable = button
     return self
   end
 
   function interactableBuilder:AddOneTimeClickButton(data)
-    table.insert(self.interactables, interactable.new(self):buttononetime(data).returns)
+    local oneTimeClickButton = interactable.new(self):buttononetime(data).returns
+    table.insert(self.interactables, oneTimeClickButton)
+    self.interactable = oneTimeClickButton
     return self
   end
 
   function interactableBuilder:AddToggle(data)
-    table.insert(self.interactables, interactable.new(self):toggle(data).returns)
+    local toggle = interactable.new(self):toggle(data).returns
+    table.insert(self.interactables, toggle)
+    self.interactable = toggle
     return self
   end
 
   function interactableBuilder:AddDropdown(data)
-    table.insert(self.interactables, interactable.new(self):dropdown(data).returns)
+    local dropdown = interactable.new(self):dropdown(data).returns
+    table.insert(self.interactables, dropdown)
+    self.interactable = dropdown
     return self
   end
 
   function interactableBuilder:AddKeybind(data)
-    table.insert(self.interactables, interactable.new(self):keybind(data).returns)
+    local keybind = interactable.new(self):keybind(data).returns
+    table.insert(self.interactables, keybind)
+    self.interactable = keybind
     return self
   end
 
   function interactableBuilder:AddSlider(data)
-    table.insert(self.interactables, interactable.new(self):slider(data).returns)
+    local slider = interactable.new(self):slider(data).returns
+    table.insert(self.interactables, slider)
+    self.interactable = slider
     return self
   end
 
   function interactableBuilder:_blank(parentHeight)
-    table.insert(self.interactables, interactable.new(self):blank(parentHeight).returns)
+    local blank = interactable.new(self):blank(parentHeight).returns
+    table.insert(self.interactables, blank)
+    self.interactable = blank
   end
 
   function interactableBuilder:AddLabel(data)
-    table.insert(self.interactables, interactable.new(self):label(data).returns)
+    local label = interactable.new(self):label(data).returns
+    table.insert(self.interactables, label)
+    self.interactable = label
     return self
   end
 end
