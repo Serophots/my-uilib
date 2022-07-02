@@ -995,9 +995,6 @@ do --Interactable
       Size = UDim2.new(1,0,0,2000),
       Position = UDim2.new(0, 0, 1, 4),
       BackgroundColor3 = theme.InnerFrameColor,
-      -- ScrollBarImageColor3 = theme.InnerFrameColor,
-      -- ScrollBarThickness = 4,
-      -- CanvasSize = UDim2.new(1, 0, 1, 0),
       ZIndex = 10,
       Visible = self.dropdownVisible,
     }, {
@@ -1420,7 +1417,6 @@ do --Interactable
       interactable = self,
       text = text,
       UpdateText = function(newText)
-        print("Updating", textLabel, newText)
         textLabel.Text = newText
       end
     }
