@@ -211,7 +211,7 @@ do --Library class
       }, { --TopBarContianer children
         util:CreateObject("TextLabel", {
           Size = UDim2.new(1, -12, 1, 0),
-          Position = UDim2.new(0, 12, -0.05, 0),
+          Position = UDim2.new(0, 8, -0.18, 0),
           BackgroundTransparency = 1,
           TextXAlignment = Enum.TextXAlignment.Left,
           TextColor3 = theme.MainTextColor,
@@ -223,11 +223,11 @@ do --Library class
         --Script Credit
         util:CreateObject("TextLabel", {
           Size = UDim2.new(1, -12, 0.3, 0),
-          Position = UDim2.new(0, 12, 0.7, 1),
+          Position = UDim2.new(0, 8, 0.56, 1),
           BackgroundTransparency = 1,
           TextXAlignment = Enum.TextXAlignment.Left,
           TextColor3 = theme.SubTextColor,
-          TextSize = 13,
+          TextSize = 12,
           Font = Enum.Font.Gotham,
           Text = "By "..owner,
           Name = "TopBarTitle",
