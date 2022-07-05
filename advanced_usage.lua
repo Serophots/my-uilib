@@ -1,6 +1,7 @@
-local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Serophots/my-uilib/main/uilib_main.lua"))()
 --V1.0.0 by Serophots
-UI = UI.init("Showcase", "v1.0.0", "Serophots", "SHOWCASE")
+
+local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Serophots/my-uilib/main/uilib_main.lua"))()
+UI = UI.init("Showcase", "v1.0.0", "Your Name Here", "SHOWCASE")
 
 local TabAim = UI:AddTab("Aim", "Silent Aim") do
   local SectionSilentAim = TabAim:AddSection("Silent Aim") do
@@ -32,7 +33,7 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 		SectionSilentAim:AddDropdown({
 			title = "dropdown",
 			placeholder = "Placeholder text",
-			options = {["text to show"]:"value to be callbacked", "two", "three"},
+			options = {["text to show"]="value to be callbacked", ["more text to show"]="two", ["some text"] = "three"},
 			callback = function(...) print("Dropdown callback", ...) end,
 		})
 		SectionSilentAim:AddDropdown({
@@ -90,6 +91,41 @@ local TabAim = UI:AddTab("Aim", "Silent Aim") do
 			end
 		})
   end
+
+  local SectionSecond = TabAim:AddSection("Second section") do
+	SectionSecond:AddButton({
+		title = "toggle",
+	})
+	SectionSecond:AddDropdown({
+		title = "dropdown",
+		options = {"hi", "hello", "lime"}
+	})
+	SectionSecond:AddSlider({
+		title = "slider",
+	})
+	SectionSecond:AddKeybind({
+		title = "keybind",
+		default = Enum.KeyCode.F
+	})
+  end
+end
+local TabTwo = UI:AddTab("Tab", "A second tab :>") do
+	local SectionSecond = TabTwo:AddSection("Section") do
+		SectionSecond:AddButton({
+			title = "toggle",
+		})
+		SectionSecond:AddDropdown({
+			title = "dropdown",
+			options = {"hi", "hello", "lime"}
+		})
+		SectionSecond:AddSlider({
+			title = "slider",
+		})
+		SectionSecond:AddKeybind({
+			title = "keybind",
+			default = Enum.KeyCode.E
+		})
+	end
 end
 
 --other cool things

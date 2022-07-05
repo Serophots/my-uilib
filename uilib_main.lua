@@ -617,7 +617,6 @@ do --Section class
 
   function section:AddButton(data)
     return interactableBuilder.new(self):AddButton(data)
-    -- return interactableBuilder.new(self):AddButton(text, callback)
   end
 
   function section:AddOneTimeClickButton(data)
