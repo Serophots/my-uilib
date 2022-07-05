@@ -164,22 +164,22 @@ interactable.__index = interactable
 
 --Theme
 local theme = getgenv().theme or {
-  BackColor = Color3.fromRGB(24, 24, 24),
-  SubFrameColor = Color3.fromRGB(29, 29, 29),
-  InnerFrameColor = Color3.fromRGB(35, 35, 35),
-  InteractiveBackColor = Color3.fromRGB(41, 41, 41),
-
-  ButtonClickedColor = Color3.fromRGB(52, 52, 52),
-  ButtonUsedColor = Color3.fromRGB(29, 29, 29),
-
-  TabHoverColor = Color3.fromRGB(235, 64, 52),
-  TabSelectedColor = Color3.fromRGB(64, 235, 52),
-
+  BackColor = Color3.fromRGB(45, 45, 50),
+  SubFrameColor = Color3.fromRGB(50, 50, 58),
+  InnerFrameColor = Color3.fromRGB(55, 55, 62),
+  InteractiveBackColor = Color3.fromRGB(60, 60, 70),
+  
+  ButtonClickedColor = Color3.fromRGB(55, 55, 62),
+  ButtonUsedColor = Color3.fromRGB(48, 48, 54),
+  
+  TabHoverColor = Color3.fromRGB(86, 86, 96),
+  TabSelectedColor = Color3.fromRGB(70, 70, 106),
+  
   MainTextColor = Color3.fromRGB(255,255,255),
   SubTextColor = Color3.fromRGB(200,200,200),
   
   SliderBar = Color3.fromRGB(200,200,200),
-  SliderBarValue = Color3.fromRGB(255, 255, 255),
+  SliderBarValue = Color3.fromRGB(240,240,255),
 }
 
 do --Library class
