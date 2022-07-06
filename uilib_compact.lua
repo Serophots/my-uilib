@@ -416,6 +416,22 @@ do
             Name = "Container"
         })
     end
+
+    function panel:AddSeperator(text)
+        util.children(self:_Container(20), {
+            util.new("TextLabel", {
+                Text = text,
+                TextColor3 = theme.SubTextColor,
+                TextSize = 15,
+                Font = Enum.Font.Gotham,
+                Size = UDim2.new(0,0,1,0),
+                Position = UDim2.new(0,2,0,0),
+                TextYAlignment = Enum.TextYAlignment.Center,
+                Name = "TopBarTitleDesc"
+            })
+        })
+        return self --Use for looping -> local Section = panel:AddSeperator("First section") do ... end
+    end
 end
 
 return library
