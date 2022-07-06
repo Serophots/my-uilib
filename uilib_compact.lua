@@ -371,6 +371,13 @@ do
 
 end
 
+--//Interactable -> boilerplate, nothing substantial -> probably could just be a table
+do
+    function interactable.new()
+        return setmetatable({}, interactable) 
+    end
+end
+
 --//Panel
 do
     function panel.new(tab, panelProperties, id)
