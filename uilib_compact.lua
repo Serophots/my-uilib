@@ -425,19 +425,90 @@ do
     end
 
     function panel:AddSeperator(text)
-        util.children(self:_Container(20), {
+        util.children(self:_Container(22), {
             util.new("TextLabel", {
                 Text = text,
                 TextColor3 = theme.SubTextColor,
-                TextSize = 15,
+                TextSize = 16,
                 Font = Enum.Font.Gotham,
                 Size = UDim2.new(0,0,1,0),
-                Position = UDim2.new(0,2,0,0),
+                Position = UDim2.new(0,2,0,-1),
                 TextYAlignment = Enum.TextYAlignment.Center,
                 Name = "TopBarTitleDesc"
             })
         })
         return self --Use for looping -> local Section = panel:AddSeperator("First section") do ... end
+    end
+
+    function panel.AddToggle(panel, data)
+        local self = interactable.new()
+        self.checked = data.checked or false
+
+        local text = data.title
+        local value = panel:_GlobalTable()
+        value[text] = self.checked
+
+        local Container = panel:_Container(15, true)
+
+        --//Check box
+        local CheckboxOutline, CheckboxInside = util.new("Frame", {
+            Parent = Container,
+            Size = UDim2.new(0, 15, 0, 15),
+            BackgroundColor3 = theme.InteractableOutline,
+            Name = "CheckboxOutline"
+        }, {
+            util.new("Frame", {
+                Size = UDim2.new(1, -2, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                BackgroundColor3 = theme.InteractableBackground,
+                Name = "CheckboxInside"
+            })
+        })
+        
+        --// Text label
+        util.new("TextLabel", {
+            Parent = Container,
+            Text = text,
+            TextColor3 = theme.SubTextColor,
+            TextSize = 12,
+            Font = Enum.Font.Gotham,
+            Size = UDim2.new(0,0,1,0),
+            Position = UDim2.new(0, 23, 0, -1),
+            TextYAlignment = Enum.TextYAlignment.Center,
+            Name = "CheckboxText"
+        })
+
+        --//Connections
+        local function render()
+            value[text] = self.checked
+            if self.checked then
+                util.tween(CheckboxInside, { BackgroundColor3 = theme.Accent }, 0.1)
+            else
+                util.tween(CheckboxInside, { BackgroundColor3 = theme.InteractableBackground }, 0.1)
+            end
+            --callback
+        end
+        render()
+        
+        Container.MouseButton1Down:Connect(function()
+            self.checked = not self.checked
+            render(not self.checked)
+        end)
+        Container.MouseEnter:Connect(function()
+            util.tween(CheckboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+        end)
+        Container.MouseLeave:Connect(function()
+            util.tween(CheckboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+        end)
+
+
+        return {
+            setToggled = function(t)
+                self.checked = t
+                render()
+            end
+        }
+
     end
 end
 
