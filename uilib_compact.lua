@@ -510,6 +510,171 @@ do
         }
 
     end
+    function panel.AddDropdown(panel, data) --> Select all that apply
+        local self = interactable.new()
+        self.selected = data.default or 1
+        self.options = data.options or {}
+        self.droppedown = false
+        
+        local text = data.title
+        local value = panel:_GlobalTable()
+        value[text] = self.selected
+
+        local Container = panel:_Container(34, true)
+
+        --//Text
+        util.new("TextLabel", {
+            Parent = Container,
+            Text = text,
+            TextColor3 = theme.SubTextColor,
+            TextSize = 12,
+            Font = Enum.Font.Gotham,
+            Size = UDim2.new(0,0,0,16),
+            Position = UDim2.new(0, 0, 0, -2),
+            TextYAlignment = Enum.TextYAlignment.Center,
+        })
+
+        --//Dropdown bar box
+        local DropdownboxOutline, DropdownboxInside, DropdownboxText = util.new("Frame", {
+            Parent = Container,
+            Size = UDim2.new(1, 0, 0, 17), --> Size Y of 20 to work with
+            Position = UDim2.new(0, 0, 0, 17),
+            BackgroundColor3 = theme.InteractableOutline,
+            Name = "DropdownboxOutline"
+        }, {
+            util.new("Frame", {
+                Size = UDim2.new(1, -2, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                BackgroundColor3 = theme.InteractableBackground,
+                Name = "DropdownboxInside"
+            }),
+            util.new("TextLabel", {
+                Text = "Selected option name",
+                TextColor3 = theme.SubTextColor,
+                TextSize = 12,
+                Font = Enum.Font.Gotham,
+                Size = UDim2.new(0,0,1,0),
+                Position = UDim2.new(0, 5, 0, 0),
+                ZIndex = 63,
+                TextYAlignment = Enum.TextYAlignment.Center,
+            })
+        })
+        
+        --//Dropdown menu (contextmenu)
+        local DropdownMenu, UIListLayout = util.new("Frame", {
+            Parent = DropdownboxOutline,
+            Size = UDim2.new(1, 0, 0, 0),
+            Position = UDim2.new(0, 0, 1, 0),
+            BackgroundColor3 = theme.InteractableOutline,
+            ZIndex = 60,
+            ClipsDescendants = true,
+        }, {
+            util.new("UIListLayout", { --> Layout for left-side tab selectors
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0,0),
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            })
+        })
+        local DropdownItem = util.new("TextButton", { --Example item
+            LayoutOrder = 1,
+            Size = UDim2.new(1, 0, 0, 20),
+            ZIndex = 61,
+            BackgroundColor3 = theme.InteractableOutline
+        }, {
+            util.new("Frame", {
+                Size = UDim2.new(1, -2, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                ZIndex = 61,
+                BackgroundColor3 = theme.InteractableBackground,
+            }),
+            util.new("TextLabel", {
+                Text = "Option Example",
+                TextColor3 = theme.SubTextColor,
+                TextSize = 12,
+                Font = Enum.Font.Gotham,
+                Size = UDim2.new(0,0,1,0),
+                Position = UDim2.new(0, 5, 0, 0),
+                ZIndex = 63,
+                TextYAlignment = Enum.TextYAlignment.Center,
+            })
+        })
+        
+        --//Render functions
+        local function renderDroppedDown()
+            if self.droppeddown then
+                DropdownMenu:TweenSize(UDim2.new(1,0,0,UIListLayout.AbsoluteContentSize.Y), "Out", "Linear", 0.1, true)
+            else
+                DropdownMenu:TweenSize(UDim2.new(1,0,0,0), "In", "Linear", 0.1, true)
+                util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
+            end
+        end
+
+
+        local didDefault = false
+        local optionObjects = {}
+        local function renderOptions()
+            local options = self.options
+
+            for i,v in pairs(optionObjects) do v:Destroy() end
+            optionObjects = {}
+
+            local count = 1
+            for i,v in pairs(options) do
+
+                local text, actual = v, v
+                if type(i) ~= "number" then --Text doesn't equal actual
+                    text, actual = i, v
+                end
+
+                local DropdownItem = DropdownItem:Clone()
+                DropdownItem.Parent = DropdownMenu
+                DropdownItem.LayoutOrder = count
+                local ItemText = DropdownItem:FindFirstChildOfClass("TextLabel")
+                ItemText.Text = text
+
+                local function select(dontDoCallback)
+                    DropdownboxText.Text = text
+                    self.droppeddown = false
+                    renderDroppedDown()
+
+                    if dontDoCallback then else
+                        --callback
+                    end
+                end
+
+                if not doneDefault and count == self.selected then
+                    dontDefault = true
+                    select(true)
+                end
+
+                DropdownItem.MouseButton1Click:Connect(select)
+
+                DropdownItem.MouseEnter:Connect(function()
+                    util.tween(ItemText, { TextColor3 = theme.Accent }, 0.1)
+                end)
+                DropdownItem.MouseLeave:Connect(function()
+                    util.tween(ItemText, { TextColor3 = theme.SubTextColor }, 0.1)
+                end)
+
+                count = count + 1
+            end
+        end
+        renderOptions(self.options)
+
+        --//Basic connectionss
+        Container.MouseButton1Down:Connect(function()
+            self.droppeddown = not self.droppeddown
+            renderDroppedDown()
+        end)
+        Container.MouseEnter:Connect(function()
+            util.tween(DropdownboxOutline, { BackgroundColor3 = theme.Accent }, 0.07)
+        end)
+        Container.MouseLeave:Connect(function()
+            if not self.droppeddown then
+                util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
+            end
+        end)
+    end
 end
 
 return library
