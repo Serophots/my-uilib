@@ -5,12 +5,6 @@ local inset = game:GetService("GuiService"):GetGuiInset()
 --//Utils
 local util = {} do
     function util.new(type, options, children)
-        local roundedFrame = type == "RoundedFrame"
-        local roundedButton = type == "RoundedButton"
-        local rounded = roundedFrame or roundedButton
-
-        type = roundedFrame and "ImageLabel" or (roundedButton and "ImageButton" or type)
-
         local instance = Instance.new(type)
         
         if instance:IsA("GuiObject") then instance.BorderSizePixel = 0 end
@@ -20,12 +14,9 @@ local util = {} do
             instance.TextYAlignment = Enum.TextYAlignment.Top
         end
 
-        if rounded then
-            instance.BackgroundTransparency = 0
-            instance.Image = "rbxassetid://4641149554"
-            instance.ScaleType = Enum.ScaleType.Slice
-            instance.SliceCenter = Rect.new(4, 4, 296, 296)
-            instance.ImageColor3 = options.BackgroundColor3 or Color3.new(1,1,1)
+        if instance:IsA("TextButton") then
+            instance.AutoButtonColor = false
+            instance.Text = ""
         end
         
         for i,v in pairs(options) do
@@ -57,12 +48,6 @@ local util = {} do
 
     local TweenService = game:GetService("TweenService")
     function util.tween(instance, properties, duration)
-        for i,v in pairs(properties) do
-            if i == "BackgroundColor3" then
-                properties["ImageColor3"] = v --rounded compat
-            end
-        end
-        
         TweenService:Create(instance, TweenInfo.new(duration, Enum.EasingStyle.Linear), properties):Play()
     end
 
@@ -79,6 +64,8 @@ local library = { values = {} } --> values is a table of positions of all intera
 library.__index = library
 local tab = {}
 tab.__index = tab
+local panel = {}
+panel.__index = panel
 
 --//Theme
 local theme = getgenv().theme or {
@@ -88,17 +75,27 @@ local theme = getgenv().theme or {
     UpperContainer = Color3.fromRGB(50, 50, 58),
     InnerContainer = Color3.fromRGB(55, 55, 62),
 
+    InteractableBackground = Color3.fromRGB(45, 45, 58),
+    InteractableOutline = Color3.fromRGB(100, 100, 100),
+
+    Accent = Color3.fromRGB(130, 130, 180), --> Used for hover outlines, selected tab
+
+    NotSelectedTab = Color3.fromRGB(70, 70, 100), --> shows on all OTHER tabs
+
     TextColor = Color3.fromRGB(255,255,255),
-    SubTextColor = Color3.fromRGB(200,200,200)
+    SubTextColor = Color3.fromRGB(200,200,200),
 }
 
 --//Library
 do
-    function library.init(title, version, owner, id)
+    function library.init(title, version, id, position, size)
+        local position = position or UDim2.new(0.2, 0, 0.2, 0)
+        local size = size or UDim2.new(0, 720, 0, 420)
+
         local ScreenGui,MasterContainer = util.new("ScreenGui", { Parent = game:GetService("CoreGui"), Name=id }, {
             util.new("Frame", { --MasterContainer
-                Size = UDim2.new(0, 510, 0, 430),
-                Position = UDim2.new(0.2,0,0.2,0),
+                Size = size,
+                Position = position,
                 BackgroundColor3 = theme.BackColor,
                 ClipsDescendants = true,
                 Name = "MasterContainer"
@@ -149,7 +146,7 @@ do
 
         --//Content Containers
         local TabSelectContainer, TabContentContainer = util.children(ContentContainer, {
-            util.new("RoundedFrame", { --> TabSelectContainer
+            util.new("Frame", { --> TabSelectContainer
                 Size = UDim2.new(0, 150, 1, -14), --> X: 157
                 Position = UDim2.new(0, 7, 0, 7),
                 BackgroundColor3 = theme.UpperContainer,
@@ -167,7 +164,7 @@ do
                     Name = "gap"
                 })
             }),
-            util.new("RoundedFrame", { --> TabContentContainer
+            util.new("Frame", { --> TabContentContainer
                 Size = UDim2.new(1, -171, 1, -14),
                 Position = UDim2.new(0, 164, 0, 7),
                 BackgroundColor3 = theme.UpperContainer,
@@ -208,6 +205,7 @@ do
         return setmetatable({
             _connections = connections,
             
+            size = size,
             keybind = Enum.KeyCode.RightControl,
             visible = true,
             tabs = {},
@@ -225,11 +223,11 @@ do
     function library:AddTab(title, desc)
         local newTab = tab.new(self, title, desc, #self.tabs+1)
 
-        -- newTab:_RegisterConnections()
-        table.insert(self.tabs, newTab)
-        -- if #self.tabs == 1 then 
 
-        return newTab
+        table.insert(self.tabs, newTab)
+        if #self.tabs == 1 then newTab:select() end
+
+        return unpack(newTab.panels)
     end
 
     function library:ToggleGUI(yesno)
@@ -239,10 +237,10 @@ do
     end
 
     function library:_ShowGUI()
-        self.MasterContainer:TweenSize(UDim2.new(0, 510, 0, 430), "Out", "Linear", 0.15, true)
+        self.MasterContainer:TweenSize(self.size, "Out", "Linear", 0.15, true)
     end
     function library:_HideGUI()
-        self.MasterContainer:TweenSize(UDim2.new(0, 510, 0, 0), "In", "Linear", 0.15, true)
+        self.MasterContainer:TweenSize(UDim2.new(0, self.size.X.Offset, 0, 0), "In", "Linear", 0.15, true)
     end
 
     function library:SetKeybind(new)
@@ -257,7 +255,7 @@ do
                 if inp.KeyCode == self.keybind and not debounce then
                     debounce = true
                     self:ToggleGUI()
-                    wait(0.2)
+                    wait(0.15)
                     debounce = false
                 end
             end
@@ -272,17 +270,17 @@ do
     function tab.new(library, title, desc, id)
 
         --//Tab Selector
-        local TabSelector = util.new("RoundedFrame", { --> TabSelector
+        local TabSelector, TabSelectorColour = util.new("TextButton", { --> TabSelector
             Parent = library.TabSelectContainer,
             Size = UDim2.new(1, -10, 0, 45), --> note: horizontla padding overriden by UIListLayour HorizontalAlignment property
-            Position = UDim2.new(0, 5, 0, 4),
+            Position = UDim2.new(0, 5, 0, 5),
             BackgroundColor3 = theme.InnerContainer,
             LayoutOrder = id,
             Name = "TabSelector"
         }, {
             util.new("Frame", {
                 Size = UDim2.new(0, 4, 1, 0),
-                BackgroundColor3 = Color3.new(1,0,0),
+                BackgroundColor3 = theme.NotSelectedTab,
             }),
             util.new("TextLabel", { --Title
                 Text = title,
@@ -303,14 +301,120 @@ do
             
         })
 
-        return setmetatable({
+        
+        local panels = {}
+        local self = setmetatable({
             library = library,
             title = title,
 
             selected = false,
             sections = {},
+            panels = panels,
+
+            TabSelector = TabSelector,
+            TabSelectorColour = TabSelectorColour,
 
         }, tab)
+
+        --//Panels
+        panels[1] = panel.new(self, {
+            Parent = library.TabContentContainer, --Padding of 5 all way around parent container. Padding of 4 between 2 pannels
+            Size = UDim2.new(0.5, -9, 1, -10),
+            Position = UDim2.new(0, 5, 0, 5),
+            BackgroundColor3 = theme.InnerContainer,
+            ScrollBarThickness = 0,
+            Visible = false,
+            Name = "TabPanel1"
+        }, 1)
+        panels[2] = panel.new(self, {
+            Parent = library.TabContentContainer,
+            Size = UDim2.new(0.5, -9, 1, -10),
+            Position = UDim2.new(0.5, 4, 0, 5),
+            BackgroundColor3 = theme.InnerContainer,
+            ScrollBarThickness = 0,
+            Visible = false,
+            Name = "TabPanel2"
+        }, 2)
+
+        return self:_connections()
+    end
+
+    function tab:_connections()
+        self.TabSelector.MouseButton1Down:Connect(function()
+            self.selected = not self.selected
+            if self.selected then
+                self:select()
+            else
+                self:deselect()
+            end
+        end)
+        return self
+    end
+    function tab:_deselectOthers()
+        for _,tab in pairs(self.library.tabs) do
+            if tab ~= self then
+                tab:deselect()
+            end
+        end
+    end
+    function tab:select()
+        self.selected = true
+        self:_deselectOthers()
+        util.tween(self.TabSelectorColour, { BackgroundColor3 = theme.Accent }, 0.15)
+        for i,v in pairs(self.panels) do v.PanelContainer.Visible = self.selected end
+    end
+    function tab:deselect()
+        self.selected = false
+        util.tween(self.TabSelectorColour, { BackgroundColor3 = theme.NotSelectedTab }, 0.15)
+        for i,v in pairs(self.panels) do v.PanelContainer.Visible = self.selected end
+    end
+
+end
+
+--//Panel
+do
+    function panel.new(tab, panelProperties, id)
+        local PanelContainer = util.new("ScrollingFrame", panelProperties, {
+            util.new("UIListLayout", {
+                VerticalAlignment = Enum.VerticalAlignment.Top,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                Padding = UDim.new(0, 7),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+            }),
+            util.new("Frame", { --So UIListLayout leaves gap at top
+                BackgroundTransparency = 1,
+                LayoutOrder = 0,
+                Size = UDim2.new(1,0,0,0), --> padding 7 + 0 (y offset) = 7 which is uniform :+1:
+                Name = "gap"
+            })
+        })
+
+        return setmetatable({
+            tab = tab,
+            PanelContainer = PanelContainer,
+            id = id,
+        }, panel)
+    end
+
+    function panel:_GlobalTable()
+        local values = self.tab.library.values
+        local tab = self.tab.title
+        local panel = self.id
+        
+        if not values[tab] then values[tab] = {} end
+        if not values[tab][panel] then values[tab][panel] = {} end
+
+        return values[tab][panel]
+    end
+
+    function panel:_Container(height, clickable)
+        return util.new(clickable and "TextButton" or "Frame", {
+            Parent = self.PanelContainer,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, -14, 0, height), --> centered by UIListLayout
+            LayoutOrder = #self.PanelContainer:GetChildren(),
+            Name = "Container"
+        })
     end
 end
 
