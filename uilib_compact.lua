@@ -198,6 +198,16 @@ do
             end
         end))
 
+        --// External click "signal" -> Used for dropdowns to detect if someone clicks outside of the dropdown -> close dropdown
+        local externalClickFunctions = {}
+        local function registerExternalClickFunction(f) table.insert(externalClickFunctions, f) end
+        MasterContainer.InputBegan:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                for _,f in pairs(externalClickFunctions) do f(inp) end
+            end
+        end)
+
+
         return setmetatable({
             _connections = connections,
             
@@ -213,6 +223,7 @@ do
             TabSelectContainer = TabSelectContainer,
             TabContentContainer = TabContentContainer,
 
+            registerExternalClickFunction = registerExternalClickFunction,
         }, library):_registerKeybind()
     end
 
@@ -663,9 +674,7 @@ do
 
     function panel.AddDropdown(panel, data) --> Select one
         local self = interactable.new()
-        -- self.selected = 0 --index
         self.options = data.options or {}
-        -- self.optionsText = {} --[index] = actualText
         self.expanded = false
         
         --//ui.values
@@ -778,8 +787,6 @@ do
                     text, actual = i, v
                 end
 
-                -- self.optionsText[count] = text
-
                 local DropdownItem = DropdownItem:Clone()
                 DropdownItem.Parent = DropdownMenu
                 DropdownItem.LayoutOrder = count
@@ -792,8 +799,6 @@ do
                         self.expanded = false
                         self.selected = count
                         renderDropdown()
-
-                        print(count, text, actual)
 
                         if dontDoCallback then else
                             --callback
@@ -830,6 +835,10 @@ do
             if not self.expanded then
                 util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
             end
+        end)
+        panel.tab.library.registerExternalClickFunction(function(inp) --click outside dropdown
+            self.expanded = false
+            renderDropdown()
         end)
     end
     
@@ -1000,7 +1009,6 @@ do
                 end)
 
                 self.optionObjects[count] = DropdownItem
-                print(count, DropdownItem)
                 count = count + 1
             end
         end
@@ -1018,6 +1026,10 @@ do
             if not self.expanded then
                 util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
             end
+        end)
+        panel.tab.library.registerExternalClickFunction(function(inp) --click outside dropdown
+            self.expanded = false
+            renderDropdown()
         end)
     end
 end
