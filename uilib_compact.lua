@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 local input = game:GetService("UserInputService")
 local mouse = game:GetService("Players").LocalPlayer:GetMouse()
 local inset = game:GetService("GuiService"):GetGuiInset()
@@ -50,13 +51,6 @@ local util = {} do
     function util.tween(instance, properties, duration)
         TweenService:Create(instance, TweenInfo.new(duration, Enum.EasingStyle.Linear), properties):Play()
     end
-
-    function util.keypress()
-        local key
-        repeat key = input.InputBegan:Wait() until key.UserInputType == Enum.UserInputType.Keyboard
-        wait()
-        return key
-    end
 end
 
 --//Classes
@@ -66,6 +60,8 @@ local tab = {}
 tab.__index = tab
 local panel = {}
 panel.__index = panel
+local interactable = {}
+interactable.__index = interactable
 
 --//Theme
 local theme = getgenv().theme or {
@@ -268,11 +264,10 @@ end
 --//Tab
 do
     function tab.new(library, title, desc, id)
-
         --//Tab Selector
         local TabSelector, TabSelectorColour = util.new("TextButton", { --> TabSelector
             Parent = library.TabSelectContainer,
-            Size = UDim2.new(1, -10, 0, 45), --> note: horizontla padding overriden by UIListLayour HorizontalAlignment property
+            Size = UDim2.new(1, -10, 0, 45), --> note: horizontal padding overriden by UIListLayour HorizontalAlignment property
             Position = UDim2.new(0, 5, 0, 5),
             BackgroundColor3 = theme.InnerContainer,
             LayoutOrder = id,
@@ -509,6 +504,161 @@ do
             end
         }
 
+    end
+    
+    function panel.AddSlider(panel, data)
+        local self = interactable.new()
+        self.selected = data.default or 1
+        self.values = data.values or {min=0,max=100,default=50,round=1}
+        
+        local function round(x) --Number of 0's after 1 in data.values.round defines number of decimal places. 1 = x, 10 = x.x, 100 = x.xx
+            return math.floor((x*(self.values.round or 1))+0.5)/(self.values.round or 1)
+        end
+
+        local text = data.title
+        local value = panel:_GlobalTable()
+        value[text] = self.selected
+
+        local Container = panel:_Container(26, true)
+
+        --//Text
+        util.new("TextLabel", {
+            Parent = Container,
+            Text = text,
+            TextColor3 = theme.SubTextColor,
+            TextSize = 12,
+            Font = Enum.Font.Gotham,
+            Size = UDim2.new(0,0,0,16),
+            Position = UDim2.new(0, 0, 0, -2),
+            TextYAlignment = Enum.TextYAlignment.Center,
+        })
+
+        --//Value box
+        local ValueboxOutline, ValueboxInside = util.new("Frame", {
+            Parent = Container,
+            Size = UDim2.new(0, 30, 0, 14), --Text is size Y 16, keep inline with that
+            Position = UDim2.new(1, -30, 0, 0),
+            BackgroundColor3 = theme.InteractableOutline,
+            Name = "ValueboxOutline"
+        }, {
+            util.new("TextBox", {
+                Text = "12.5",
+                TextSize = 6,
+                TextColor3 = theme.SubTextColor,
+                Size = UDim2.new(1, -2, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                BackgroundColor3 = theme.InteractableBackground,
+                Name = "ValueboxInside"
+            })
+        })
+
+        --//Slider bar box
+        local SliderboxOutline, SliderboxInside, SliderboxFill = util.new("Frame", {
+            Parent = Container,
+            Size = UDim2.new(1, 0, 0, 9),
+            Position = UDim2.new(0, 0, 0, 17),
+            BackgroundColor3 = theme.InteractableOutline,
+            Name = "SliderboxOutline"
+        }, {
+            util.new("Frame", {
+                Size = UDim2.new(1, -2, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                BackgroundColor3 = theme.InteractableBackground,
+                Name = "SliderboxInside"
+            }),
+            util.new("Frame", {
+                Size = UDim2.new(0, 0, 1, -2),
+                Position = UDim2.new(0, 1, 0, 1),
+                BackgroundColor3 = theme.Accent,
+                Name = "SliderboxFill",
+            }),
+            util.new("Frame", {
+                Size = UDim2.new(0, 1, 1, 0),
+                Position = UDim2.new(0, -1, 0, 0),
+                BackgroundColor3 = theme.InteractableOutline,
+                ZIndex = 2,
+                Name = "SliderboxOutlineLeftWall" --Reinforce left wall since when SliderboxFill size is negative (scale: 0, offset: -2) it leaks over edge
+            })
+        })
+
+        --//Functions
+        local isInteracting = false
+
+        local function renderFromPercent(percent)
+            local percent = math.clamp(percent,0,1)
+
+            local min = self.values.min or 0
+            local max = self.values.max or 0
+            local diff = max-min
+
+            local actualValue = round(percent * diff + min)
+            ValueboxInside.Text = tostring(actualValue)
+            
+            SliderboxFill:TweenSize(UDim2.new(percent, -2, 1, -2), "In", "Linear", 0.05, true, function()
+                if SliderboxFill.AbsoluteSize.X < 0 then SliderboxFill.Size = UDim2.new(0,0,1,-2) end --negative size will show over outline. Works in conjunction with SliuderboxOutlineLeftWall
+            end)
+        end
+        local function renderFromValue(value)
+            local min = self.values.min or 0
+            local max = self.values.max or 0
+            local diff = max-min
+            
+            renderFromPercent((value - min)/diff)
+        end
+        local function renderFromMouse()
+            local clickedPercentage = (input:GetMouseLocation().X - SliderboxOutline.AbsolutePosition.X) / SliderboxOutline.AbsoluteSize.X
+            if clickedPercentage > 99.7/100 then clickedPercentage = 1 end
+            if clickedPercentage < 0.3/100 then clickedPercentage = 0 end
+
+            renderFromPercent(clickedPercentage)
+        end
+        renderFromValue(self.values.default or 0)
+        
+        --//Connections
+        --Slider interact
+        Container.InputBegan:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                isInteracting = true
+            end
+        end)
+        Container.InputEnded:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                isInteracting = false
+            end
+        end)
+        RunService.RenderStepped:Connect(function()
+            if isInteracting then
+                renderFromMouse()
+            end
+        end)
+
+        --Value box hover
+        local isFocused = false
+        ValueboxInside.Focused:Connect(function()
+            isFocused = true
+            util.tween(ValueboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+        end)
+        ValueboxInside.FocusLost:Connect(function()
+            if tonumber(ValueboxInside.Text) then
+                renderFromValue(tonumber(ValueboxInside.Text))
+            end
+            isFocused = false
+            util.tween(ValueboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+        end)
+        ValueboxOutline.MouseEnter:Connect(function()
+            util.tween(ValueboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+        end)
+        ValueboxOutline.MouseLeave:Connect(function()
+            if not isFocused then util.tween(ValueboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1) end
+        end)
+
+        --Container hover
+        Container.MouseEnter:Connect(function()
+            util.tween(SliderboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+        end)
+        Container.MouseLeave:Connect(function()
+            util.tween(SliderboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+        end)
     end
     function panel.AddDropdown(panel, data) --> Select all that apply
         local self = interactable.new()
