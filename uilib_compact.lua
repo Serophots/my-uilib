@@ -660,18 +660,21 @@ do
             util.tween(SliderboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
         end)
     end
-    function panel.AddDropdown(panel, data) --> Select all that apply
+
+    function panel.AddDropdown(panel, data) --> Select one
         local self = interactable.new()
-        self.selected = data.default or 1
+        -- self.selected = 0 --index
         self.options = data.options or {}
-        self.droppedown = false
+        -- self.optionsText = {} --[index] = actualText
+        self.expanded = false
         
+        --//ui.values
         local text = data.title
         local value = panel:_GlobalTable()
         value[text] = self.selected
 
-        local Container = panel:_Container(34, true)
 
+        local Container = panel:_Container(34, true)
         --//Text
         util.new("TextLabel", {
             Parent = Container,
@@ -699,7 +702,7 @@ do
                 Name = "DropdownboxInside"
             }),
             util.new("TextLabel", {
-                Text = "Selected option name",
+                Text = "",
                 TextColor3 = theme.SubTextColor,
                 TextSize = 12,
                 Font = Enum.Font.Gotham,
@@ -750,8 +753,8 @@ do
         })
         
         --//Render functions
-        local function renderDroppedDown()
-            if self.droppeddown then
+        local function renderDropdown()
+            if self.expanded then
                 DropdownMenu:TweenSize(UDim2.new(1,0,0,UIListLayout.AbsoluteContentSize.Y), "Out", "Linear", 0.1, true)
             else
                 DropdownMenu:TweenSize(UDim2.new(1,0,0,0), "In", "Linear", 0.1, true)
@@ -760,7 +763,6 @@ do
         end
 
 
-        local didDefault = false
         local optionObjects = {}
         local function renderOptions()
             local options = self.options
@@ -776,6 +778,8 @@ do
                     text, actual = i, v
                 end
 
+                -- self.optionsText[count] = text
+
                 local DropdownItem = DropdownItem:Clone()
                 DropdownItem.Parent = DropdownMenu
                 DropdownItem.LayoutOrder = count
@@ -783,21 +787,24 @@ do
                 ItemText.Text = text
 
                 local function select(dontDoCallback)
-                    DropdownboxText.Text = text
-                    self.droppeddown = false
-                    renderDroppedDown()
+                    if self.expanded then --double clicks
+                        DropdownboxText.Text = text
+                        self.expanded = false
+                        self.selected = count
+                        renderDropdown()
 
-                    if dontDoCallback then else
-                        --callback
+                        print(count, text, actual)
+
+                        if dontDoCallback then else
+                            --callback
+                        end
                     end
                 end
+                DropdownItem.MouseButton1Click:Connect(select)
 
-                if not doneDefault and count == self.selected then
-                    dontDefault = true
+                if count == (data.default or 0) then
                     select(true)
                 end
-
-                DropdownItem.MouseButton1Click:Connect(select)
 
                 DropdownItem.MouseEnter:Connect(function()
                     util.tween(ItemText, { TextColor3 = theme.Accent }, 0.1)
@@ -809,18 +816,18 @@ do
                 count = count + 1
             end
         end
-        renderOptions(self.options)
+        renderOptions()
 
         --//Basic connectionss
         Container.MouseButton1Down:Connect(function()
-            self.droppeddown = not self.droppeddown
-            renderDroppedDown()
+            self.expanded = not self.expanded
+            renderDropdown()
         end)
         Container.MouseEnter:Connect(function()
             util.tween(DropdownboxOutline, { BackgroundColor3 = theme.Accent }, 0.07)
         end)
         Container.MouseLeave:Connect(function()
-            if not self.droppeddown then
+            if not self.expanded then
                 util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
             end
         end)
