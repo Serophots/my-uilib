@@ -715,9 +715,10 @@ do
                 TextColor3 = theme.SubTextColor,
                 TextSize = 12,
                 Font = Enum.Font.Gotham,
-                Size = UDim2.new(0,0,1,0),
+                Size = UDim2.new(1,-5,1,0),
                 Position = UDim2.new(0, 5, 0, 0),
-                -- ZIndex = 63,
+                BackgroundTransparency = 1,
+                ClipsDescendants = true,
                 TextYAlignment = Enum.TextYAlignment.Center,
             })
         })
@@ -834,7 +835,7 @@ do
         end)
     end
     
-    function panel.AddSelection(panel, data) --> Select one
+    function panel.AddSelection(panel, data) --> Select many
         local self = interactable.new()
         self.selected = {} --list of indexes. Use optionsText to then get text
         self.options = data.options or {}
@@ -879,9 +880,10 @@ do
                 TextColor3 = theme.SubTextColor,
                 TextSize = 12,
                 Font = Enum.Font.Gotham,
-                Size = UDim2.new(0,0,1,0),
+                Size = UDim2.new(1,-5,1,0),
                 Position = UDim2.new(0, 5, 0, 0),
-                ZIndex = 63,
+                ClipsDescendants = true,
+                BackgroundTransparency = 1,
                 TextYAlignment = Enum.TextYAlignment.Center,
             })
         })
@@ -938,7 +940,6 @@ do
         local function renderSelected()
             local text = ""
             for _,count in pairs(self.selected) do
-                print(count)
                 text = text..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
             end
             DropdownboxText.Text = text:sub(1, #text-2)
