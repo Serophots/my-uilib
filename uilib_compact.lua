@@ -717,7 +717,7 @@ do
                 Font = Enum.Font.Gotham,
                 Size = UDim2.new(0,0,1,0),
                 Position = UDim2.new(0, 5, 0, 0),
-                ZIndex = 63,
+                -- ZIndex = 63,
                 TextYAlignment = Enum.TextYAlignment.Center,
             })
         })
