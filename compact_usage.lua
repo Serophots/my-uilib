@@ -8,7 +8,10 @@ local AimOne, AimTwo = UI:AddTab("Aim", "Silent Aim") do
 		})
 		Section:AddToggle({
 			title = "Display field of view",
-			checked = true
+			checked = true,
+			colorpicker = {
+				default = Color3.new(0,0.5,1)
+			}
 		})
 		Section:AddSlider({
 			title = "Field of view",

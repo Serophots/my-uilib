@@ -15,9 +15,9 @@ local util = {} do
             instance.TextYAlignment = Enum.TextYAlignment.Top
         end
 
-        if instance:IsA("TextButton") then
+        if instance:IsA("TextButton") or instance:IsA("ImageButton") then
             instance.AutoButtonColor = false
-            instance.Text = ""
+            if instance:IsA("TextButton") then instance.Text = "" end
         end
         
         for i,v in pairs(options) do
@@ -508,12 +508,177 @@ do
         end)
 
 
-        return {
-            setToggled = function(t)
-                self.checked = t
-                render()
+        --//Optional colorpicker
+        if data.colorpicker then
+            self.expandedColor = false
+            --//Toggle box
+            local ColorpickerboxOutline, ColorpickerboxInside = util.new("Frame", {
+                Parent = Container,
+                Size = UDim2.new(0, 20, 0, 13),
+                Position = UDim2.new(1,-20,0,1),
+                BackgroundColor3 = theme.InteractableOutline,
+                Name = "ColorpickerboxOutline"
+            }, {
+                util.new("TextButton", {
+                    Size = UDim2.new(1,-2,1,-2),
+                    Position = UDim2.new(0,1,0,1),
+                    BackgroundColor3 = theme.Accent,
+                    Name = "ColorpickerboxInside"
+                })
+            })
+
+            --//Colorpicker window frame
+            local ColorpickerWindowContainer, ColorpickerWindow = util.new("TextButton", { -->handle clicks so they dont go thru the frame to anything below
+                Parent = ColorpickerboxOutline,
+                Size = UDim2.new(0, 200, 0, 230),
+                Position = UDim2.new(1, -200, 1, 0),
+                BackgroundColor3 = theme.UpperContainer,
+                ClipsDescendants = true,
+                Visible = self.expandedColor,
+                ZIndex = 70,
+                Name = "ColorpickerWindowContainer"
+            }, {
+                util.new("Frame", {
+                    Size = UDim2.new(1, -10, 1, -10),
+                    Position = UDim2.new(0, 5, 0, 5),
+                    BackgroundColor3 = theme.InnerContainer,
+                    ZIndex = 70,
+                    Name = "ColorpickerWindow"
+                })
+            })
+
+            --[[
+                Understanding HSV: https://colorpicker.me/
+
+                As you move the bar on the side, Hue changes linearly. This "Side bar" is therefore a Hue Slider
+
+                In the middle:
+                - As you move left to right, Saturation linearly ranges 0-100
+                - As you move Top to Bottom, Value linearly ranges 0-100
+            ]]
+
+            --//Saturation + Value BOX. Saturation is linear left-right, Value is linear top-bottom
+            local SatValWindow = util.new("ImageButton", {
+                Parent = ColorpickerWindow,
+                Size = UDim2.new(0, 180, 0, 180),
+                Position = UDim2.new(0, 5, 0, 5),
+                Image = "rbxassetid://4805274903",
+                BackgroundColor3 = Color3.new(1,1,1),
+                ImageColor3 = Color3.new(1,0,0),
+                ZIndex = 70,
+                Name = "SatValWindow"
+            })
+            local SatValSelector = util.new("Frame", {
+                Parent = SatValWindow,
+                Size = UDim2.new(0,4,0,4),
+                BackgroundColor3 = Color3.new(1,1,1),
+                ZIndex = 70,
+                Name = "SatValSelector"
+            })
+
+            --//Hue SLIDER -> https://en.wikipedia.org/wiki/Hue
+            local HueBar = util.new("ImageButton", {
+                Parent = ColorpickerWindow,
+                Size = UDim2.new(0, 180, 0, 25),
+                Position = UDim2.new(0, 5, 0, 190),
+                Image = "rbxassetid://3551296450",
+                BackgroundColor3 = Color3.new(1,1,1),
+                ImageColor3 = Color3.new(1,1,1),
+                ZIndex = 70,
+                Name = "HueBar"
+            })
+            local HueSelector = util.new("Frame", {
+                Parent = HueBar,
+                Size = UDim2.new(0,2,1,6),
+                Position = UDim2.new(0,0,0,-3),
+                BackgroundColor3 = Color3.new(1,1,1),
+                ZIndex = 70,
+                Name = "HueSelector"
+            })
+            --> Hue slider controls HUE. Within hue slider, S and V are set to 100%
+            --> ^ When calculating RGB for ShadeWindow, HSV(mousePos, 100%, 100%) -> rgb
+
+            local currentHue, currentSat, curreentVal = 0,0,0
+            local function hueFromPercent(percent)
+                currentHue = percent
+                SatValWindow.ImageColor3 = Color3.fromHSV(currentHue, 1, 1) --values range 0-1
+                ColorpickerboxInside.BackgroundColor3 = Color3.fromHSV(currentHue, currentSat, currentVal)
+                HueSelector.Position = UDim2.new(currentHue, -1, 0, -3)
             end
-        }
+            local function satValFromPercent(percentX, percentY)
+                currentSat, currentVal = percentX, percentY
+                ColorpickerboxInside.BackgroundColor3 = Color3.fromHSV(currentHue, currentSat, currentVal)
+                SatValSelector.Position = UDim2.new(1-currentSat, -2, 1-currentVal, -2)
+            end
+            
+            local function hueFromMouse()
+                local x = math.clamp((input:GetMouseLocation().X - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0,1)
+                hueFromPercent(x)
+            end
+            local function satValFromMouse()
+                local mouse = input:GetMouseLocation()
+                local x = 1-math.clamp((mouse.X           - SatValWindow.AbsolutePosition.X) / SatValWindow.AbsoluteSize.X, 0,1)
+                local y = 1-math.clamp((mouse.Y - inset.Y - SatValWindow.AbsolutePosition.Y) / SatValWindow.AbsoluteSize.Y, 0,1)
+                satValFromPercent(x, y)
+            end
+
+            local function setColor(Color)
+                local hue, sat, val = Color3.toHSV(Color)
+                hueFromPercent(hue)
+                satValFromPercent(sat, val)
+            end
+            setColor(data.colorpicker.default or Color3.new(1,0,0))
+
+
+            --//Connections
+            local isUsingHueBar = false
+            HueBar.InputBegan:Connect(function(inp)
+                if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                    isUsingHueBar = true
+                end
+            end)
+            HueBar.InputEnded:Connect(function(inp)
+                if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                    isUsingHueBar = false
+                end
+            end)
+
+            local isUsingSatValWindow = false
+            SatValWindow.InputBegan:Connect(function(inp)
+                if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                    isUsingSatValWindow = true
+                end
+            end)
+            SatValWindow.InputEnded:Connect(function(inp)
+                if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                    isUsingSatValWindow = false
+                end
+            end)
+
+            RunService.RenderStepped:Connect(function()
+                if isUsingHueBar then
+                    hueFromMouse()
+                elseif isUsingSatValWindow then
+                    satValFromMouse()
+                end
+            end)
+
+            ColorpickerboxInside.MouseButton1Down:Connect(function()
+                self.expandedColor = not self.expandedColor
+                ColorpickerWindowContainer.Visible = self.expandedColor
+            end)
+            ColorpickerboxOutline.MouseEnter:Connect(function()
+                util.tween(ColorpickerboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+            end)
+            ColorpickerboxOutline.MouseLeave:Connect(function()
+                util.tween(ColorpickerboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+            end)
+            panel.tab.library.registerExternalClickFunction(function(inp) --click outside dropdown
+                self.expandedColor = false
+                ColorpickerWindowContainer.Visible = self.expandedColor
+            end)
+        end
+
 
     end
     
