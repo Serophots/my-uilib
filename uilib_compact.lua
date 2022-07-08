@@ -793,14 +793,14 @@ do
                 local ItemText = DropdownItem:FindFirstChildOfClass("TextLabel")
                 ItemText.Text = text
 
-                local function select(dontDoCallback)
-                    if self.expanded then --double clicks
+                local function select(override)
+                    if self.expanded or override then --double clicks
                         DropdownboxText.Text = text
                         self.expanded = false
                         self.selected = count
                         renderDropdown()
 
-                        if dontDoCallback then else
+                        if override then else
                             --callback
                         end
                     end
@@ -973,8 +973,8 @@ do
                 local ItemText = DropdownItem:FindFirstChildOfClass("TextLabel")
                 ItemText.Text = text
 
-                local function select(dontDoCallback)
-                    if self.expanded then --double clicks
+                local function select(override)
+                    if self.expanded or override then --double clicks
                         local found = table.find(self.selected, DropdownItem.LayoutOrder)
                         if found then
                             table.remove(self.selected, found)
@@ -987,8 +987,8 @@ do
                         end
 
 
-                        renderSelected()
-                        if dontDoCallback then else
+                        if override then else
+                            renderSelected()
                             --callback
                         end
                     end
@@ -1013,6 +1013,7 @@ do
             end
         end
         renderOptions()
+        renderSelected()
 
         --//Basic connectionss
         Container.MouseButton1Down:Connect(function()
