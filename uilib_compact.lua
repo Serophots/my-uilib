@@ -779,13 +779,7 @@ do
             for i,v in pairs(optionObjects) do v:Destroy() end
             optionObjects = {}
 
-            local count = 1
-            for i,v in pairs(options) do
-
-                local text, actual = v, v
-                if type(i) ~= "number" then --Text doesn't equal actual
-                    text, actual = i, v
-                end
+            for count,text in pairs(options) do
 
                 local DropdownItem = DropdownItem:Clone()
                 DropdownItem.Parent = DropdownMenu
@@ -817,8 +811,6 @@ do
                 DropdownItem.MouseLeave:Connect(function()
                     util.tween(ItemText, { TextColor3 = theme.SubTextColor }, 0.1)
                 end)
-
-                count = count + 1
             end
         end
         renderOptions()
@@ -959,13 +951,8 @@ do
             for i,v in pairs(self.optionObjects) do v:Destroy() end
             self.optionObjects = {}
 
-            local count = 1
-            for i,v in pairs(options) do
+            for count,text in pairs(options) do
                 local selected = false
-                local text, actual = v, v
-                if type(i) ~= "number" then --Text doesn't equal actual
-                    text, actual = i, v
-                end
 
                 local DropdownItem = DropdownItem:Clone()
                 DropdownItem.Parent = DropdownMenu
@@ -1009,7 +996,6 @@ do
                 end)
 
                 self.optionObjects[count] = DropdownItem
-                count = count + 1
             end
         end
         renderOptions()

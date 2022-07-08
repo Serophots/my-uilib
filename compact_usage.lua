@@ -2,7 +2,6 @@ local UI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Serophots/
 UI = UI.init("Showcase", "v1.0.0", "SHOWCASE")
 
 local AimOne, AimTwo = UI:AddTab("Aim", "Silent Aim") do
-
 	local Section = AimOne:AddSeperator("Silent Aim") do
 		Section:AddToggle({
 			title = "Enabled"
@@ -23,14 +22,7 @@ local AimOne, AimTwo = UI:AddTab("Aim", "Silent Aim") do
 		})
 		Section:AddSelection({
 			title = "Bodyparts",
-			options = {
-			    ["Head"] = "head",
-			    ["Torso"] = "torso",
-			    ["Left Arm"] = "larm",
-			    ["Right Arm"] = "rarm",
-			    ["Left Leg"] = "lleg",
-			    ["Right Arm"] = "rarm",
-			}
+			options = { "Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Arm" }
 		})
 	end
 	local Section = AimOne:AddSeperator("Tuning") do
