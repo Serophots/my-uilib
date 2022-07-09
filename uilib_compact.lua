@@ -1085,7 +1085,7 @@ do
         self.expanded = false
         
         --//ui.values
-        local text = data.title
+        local title = data.title
         local value = panel:_GlobalTable()
         --Default is set when renderOptions() is called for first time
 
@@ -1180,13 +1180,13 @@ do
         end
 
         local function renderSelected()
-            local textt = ""
+            local text = ""
             for _,count in pairs(self.selected) do
-                textt = textt..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
+                text = text..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
             end
-            DropdownboxText.Text = text:sub(1, #textt-2)
+            DropdownboxText.Text = text:sub(1, #text-2)
 
-            value[text] = self.selected
+            value[title] = self.selected
         end
 
 
