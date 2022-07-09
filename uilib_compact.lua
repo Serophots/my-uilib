@@ -415,11 +415,13 @@ do
         local values = self.tab.library.values
         local tab = self.tab.title
         local panel = self.id
+        local seperator = self.currentSeperator
         
         if not values[tab] then values[tab] = {} end
         if not values[tab][panel] then values[tab][panel] = {} end
+        if not values[tab][panel][seperator] then values[tab][panel][seperator] = {} end
 
-        return values[tab][panel]
+        return values[tab][panel][seperator]
     end
 
     function panel:_Container(height, clickable)
@@ -433,6 +435,7 @@ do
     end
 
     function panel:AddSeperator(text)
+        self.currentSeperator = text
         util.children(self:_Container(22), {
             util.new("TextLabel", {
                 Text = text,
@@ -1273,7 +1276,6 @@ do
             setSelected = function(table) --Table of indexes for all the items to be selected
                 self.selected = table
                 renderSelected()
-                renderDropdown() --set size
             end,
             getSelected = function() return self.selected end, --returns list of indexes
             setDropdownExpanded = function(expanded)
