@@ -893,7 +893,7 @@ do
         self.expanded = false
         
         --//ui.values
-        local text = data.title
+        local title = data.title
         local value = panel:_GlobalTable()
         --Default is set when renderOptions() is called for first time
 
@@ -1010,7 +1010,7 @@ do
                         self.selected = count
                         renderDropdown()
 
-                        value[text] = count
+                        value[title] = count
                         if override then else
                             callback(count, text)
                         end
@@ -1064,7 +1064,7 @@ do
                 DropdownboxText.Text = text
                 self.selected = count
 
-                value[text] = count
+                value[title] = count
                 callback(count, text)
             end,
             getSelected = function() return self.selected, self.options[self.selected] end, --returns index, text
