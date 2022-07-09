@@ -3,6 +3,8 @@ local input = game:GetService("UserInputService")
 local mouse = game:GetService("Players").LocalPlayer:GetMouse()
 local inset = game:GetService("GuiService"):GetGuiInset()
 
+local function EmptyFunction() end
+
 --//Utils
 local util = {} do
     function util.new(type, options, children)
@@ -446,7 +448,8 @@ do
         return self --Use for looping -> local Section = panel:AddSeperator("First section") do ... end
     end
 
-    function panel.AddToggle(panel, data)
+    function panel.AddToggle(panel, data) --with ColorPicker
+        local callback = data.callback or EmptyFunction
         local self = interactable.new()
         self.checked = data.checked or false
 
@@ -485,20 +488,22 @@ do
         })
 
         --//Connections
-        local function render()
-            value[text] = self.checked
+        local function render(override)
             if self.checked then
                 util.tween(CheckboxInside, { BackgroundColor3 = theme.Accent }, 0.1)
             else
                 util.tween(CheckboxInside, { BackgroundColor3 = theme.InteractableBackground }, 0.1)
             end
-            --callback
+            value[text] = self.checked
+            if override then else
+                callback(self.checked)
+            end
         end
-        render()
+        render(true)
         
         Container.MouseButton1Down:Connect(function()
             self.checked = not self.checked
-            render(not self.checked)
+            render()
         end)
         Container.MouseEnter:Connect(function()
             util.tween(CheckboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
@@ -509,7 +514,9 @@ do
 
 
         --//Optional colorpicker
+        local colorpickerReturn = {}
         if data.colorpicker then
+            local callback = data.colorpicker.callback or EmptyFunction
             self.expandedColor = false
             --//Toggle box
             local ColorpickerboxOutline, ColorpickerboxInside = util.new("Frame", {
@@ -599,16 +606,26 @@ do
             --> ^ When calculating RGB for ShadeWindow, HSV(mousePos, 100%, 100%) -> rgb
 
             local currentHue, currentSat, curreentVal = 0,0,0
-            local function hueFromPercent(percent)
+            local function hueFromPercent(percent, override)
                 currentHue = percent
                 SatValWindow.ImageColor3 = Color3.fromHSV(currentHue, 1, 1) --values range 0-1
-                ColorpickerboxInside.BackgroundColor3 = Color3.fromHSV(currentHue, currentSat, currentVal)
                 HueSelector.Position = UDim2.new(currentHue, -1, 0, -3)
-            end
-            local function satValFromPercent(percentX, percentY)
-                currentSat, currentVal = percentX, percentY
                 ColorpickerboxInside.BackgroundColor3 = Color3.fromHSV(currentHue, currentSat, currentVal)
+
+                value[text.."_COLOR"] = ColorpickerboxInside.BackgroundColor3
+                if override then else
+                    callback(ColorpickerboxInside.BackgroundColor3)
+                end
+            end
+            local function satValFromPercent(percentX, percentY, override)
+                currentSat, currentVal = percentX, percentY
                 SatValSelector.Position = UDim2.new(1-currentSat, -2, 1-currentVal, -2)
+                ColorpickerboxInside.BackgroundColor3 = Color3.fromHSV(currentHue, currentSat, currentVal)
+
+                value[text.."_COLOR"] = ColorpickerboxInside.BackgroundColor3
+                if override then else
+                    callback(ColorpickerboxInside.BackgroundColor3)
+                end
             end
             
             local function hueFromMouse()
@@ -622,12 +639,12 @@ do
                 satValFromPercent(x, y)
             end
 
-            local function setColor(Color)
+            local function setColor(Color, override)
                 local hue, sat, val = Color3.toHSV(Color)
-                hueFromPercent(hue)
-                satValFromPercent(sat, val)
+                hueFromPercent(hue, override)
+                satValFromPercent(sat, val, override)
             end
-            setColor(data.colorpicker.default or Color3.new(1,0,0))
+            setColor(data.colorpicker.default or Color3.new(1,0,0), true)
 
 
             --//Connections
@@ -677,24 +694,41 @@ do
                 self.expandedColor = false
                 ColorpickerWindowContainer.Visible = self.expandedColor
             end)
+
+            colorpickerReturn = {
+                setColor = setColor,
+                getColor = function() return ColorpickerboxInside.BackgroundColor3 end,
+                callback = callback
+            }
         end
 
-
+        return {
+            colorpicker = colorpickerReturn,
+            setToggled = function(toggled)
+                self.checked = toggled
+                render()
+            end,
+            toggle = function()
+                self.checked = not self.checked
+                render()
+            end,
+            getToggled = function() return self.checked end,
+            callback = callback
+        }, colorpickerReturn
     end
     
     function panel.AddSlider(panel, data)
+        local callback = data.callback or EmptyFunction
         local self = interactable.new()
-        self.selected = data.default or 1
         self.values = data.values or {min=0,max=100,default=50,round=1}
-        
-        local function round(x) --Number of 0's after 1 in data.values.round defines number of decimal places. 1 = x, 10 = x.x, 100 = x.xx
-            return math.floor((x*(self.values.round or 1))+0.5)/(self.values.round or 1)
-        end
 
         local text = data.title
         local value = panel:_GlobalTable()
-        value[text] = self.selected
+        value[text] = self.values.default or 50
 
+        local function round(x) --Number of 0's after 1 in data.values.round defines number of decimal places. 1 = x, 10 = x.x, 100 = x.xx
+            return math.floor((x*(self.values.round or 1))+0.5)/(self.values.round or 1)
+        end
         local Container = panel:_Container(26, true)
 
         --//Text
@@ -760,7 +794,7 @@ do
         --//Functions
         local isInteracting = false
 
-        local function renderFromPercent(percent)
+        local function renderFromPercent(percent, override)
             local percent = math.clamp(percent,0,1)
 
             local min = self.values.min or 0
@@ -773,13 +807,18 @@ do
             SliderboxFill:TweenSize(UDim2.new(percent, -2, 1, -2), "In", "Linear", 0.05, true, function()
                 if SliderboxFill.AbsoluteSize.X < 0 then SliderboxFill.Size = UDim2.new(0,0,1,-2) end --negative size will show over outline. Works in conjunction with SliuderboxOutlineLeftWall
             end)
+
+            value[text] = actualValue
+            if override then else
+                callback(actualValue)
+            end
         end
-        local function renderFromValue(value)
+        local function renderFromValue(value, override)
             local min = self.values.min or 0
             local max = self.values.max or 0
             local diff = max-min
             
-            renderFromPercent((value - min)/diff)
+            renderFromPercent((value - min)/diff, override)
         end
         local function renderFromMouse()
             local clickedPercentage = (input:GetMouseLocation().X - SliderboxOutline.AbsolutePosition.X) / SliderboxOutline.AbsoluteSize.X
@@ -788,7 +827,7 @@ do
 
             renderFromPercent(clickedPercentage)
         end
-        renderFromValue(self.values.default or 0)
+        renderFromValue(self.values.default or 0, true)
         
         --//Connections
         --Slider interact
@@ -835,9 +874,17 @@ do
         Container.MouseLeave:Connect(function()
             util.tween(SliderboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
         end)
+
+        return {
+            setPercent = renderFromPercent, --NOTE: Despite name, this takes value 0-1, not 0-100
+            setValue = renderFromValue,
+            getValue = function() return value[text] end,
+            callback = callback
+        }
     end
 
     function panel.AddDropdown(panel, data) --> Select one
+        local callback = data.callback or EmptyFunction
         local self = interactable.new()
         self.options = data.options or {}
         self.expanded = false
@@ -845,7 +892,7 @@ do
         --//ui.values
         local text = data.title
         local value = panel:_GlobalTable()
-        value[text] = self.selected
+        --Default is set when renderOptions() is called for first time
 
 
         local Container = panel:_Container(34, true)
@@ -960,8 +1007,9 @@ do
                         self.selected = count
                         renderDropdown()
 
+                        value[text] = count
                         if override then else
-                            --callback
+                            callback(count, text)
                         end
                     end
                 end
@@ -977,9 +1025,12 @@ do
                 DropdownItem.MouseLeave:Connect(function()
                     util.tween(ItemText, { TextColor3 = theme.SubTextColor }, 0.1)
                 end)
+
+                table.insert(optionObjects, DropdownItem)
             end
         end
         renderOptions()
+        data.default = 0 --doesn't set to default again
 
         --//Basic connectionss
         Container.MouseButton1Down:Connect(function()
@@ -998,9 +1049,32 @@ do
             self.expanded = false
             renderDropdown()
         end)
+
+        return {
+            setOptions = function(options)
+                self.selected = 0
+                self.options = options
+                renderOptions()
+            end,
+            setSelected = function(count) --call with index of item in options list
+                local text = self.options[count]
+                DropdownboxText.Text = text
+                self.selected = count
+
+                value[text] = count
+                callback(count, text)
+            end,
+            getSelected = function() return self.selected, self.options[self.selected] end, --returns index, text
+            setDropdownExpanded = function(expanded)
+                self.expanded = expanded
+                renderDropdown()
+            end,
+            callback = callback
+        }
     end
     
     function panel.AddSelection(panel, data) --> Select many
+        local callback = data.callback or EmptyFunction
         local self = interactable.new()
         self.selected = {} --list of indexes. Use optionsText to then get text
         self.options = data.options or {}
@@ -1010,7 +1084,7 @@ do
         --//ui.values
         local text = data.title
         local value = panel:_GlobalTable()
-        value[text] = self.selected
+        --Default is set when renderOptions() is called for first time
 
 
         local Container = panel:_Container(34, true)
@@ -1108,6 +1182,8 @@ do
                 text = text..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
             end
             DropdownboxText.Text = text:sub(1, #text-2)
+
+            value[text] = self.selected
         end
 
 
@@ -1141,8 +1217,9 @@ do
 
 
                         if override then else
-                            renderSelected()
-                            --callback
+                            renderSelected() --if override then renderSelected() is called at the end, when all defaults are put in
+                            --value[text] set in renderSelected()
+                            callback(self.selected)
                         end
                     end
                 end
@@ -1166,6 +1243,7 @@ do
         end
         renderOptions()
         renderSelected()
+        data.default = {} --dont set defaults again
 
         --//Basic connectionss
         Container.MouseButton1Down:Connect(function()
@@ -1184,6 +1262,26 @@ do
             self.expanded = false
             renderDropdown()
         end)
+
+        
+        return {
+            setOptions = function(options)
+                self.selected = {}
+                self.options = options
+                renderOptions()
+            end,
+            setSelected = function(table) --Table of indexes for all the items to be selected
+                self.selected = table
+                renderSelected()
+                renderDropdown() --set size
+            end,
+            getSelected = function() return self.selected end, --returns list of indexes
+            setDropdownExpanded = function(expanded)
+                self.expanded = expanded
+                renderDropdown()
+            end,
+            callback = callback
+        }
     end
 end
 
