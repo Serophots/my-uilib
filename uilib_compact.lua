@@ -1180,11 +1180,11 @@ do
         end
 
         local function renderSelected()
-            local text = ""
+            local textt = ""
             for _,count in pairs(self.selected) do
-                text = text..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
+                textt = textt..self.optionObjects[count]:FindFirstChildOfClass("TextLabel").Text..", "
             end
-            DropdownboxText.Text = text:sub(1, #text-2)
+            DropdownboxText.Text = text:sub(1, #textt-2)
 
             value[text] = self.selected
         end
