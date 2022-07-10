@@ -925,7 +925,7 @@ do
         --//Text
         util.new("TextLabel", {
             Parent = Container,
-            Text = text,
+            Text = title,
             TextColor3 = theme.SubTextColor,
             TextSize = 12,
             Font = Enum.Font.Gotham,
@@ -1119,7 +1119,7 @@ do
         --//Text
         util.new("TextLabel", {
             Parent = Container,
-            Text = text,
+            Text = title,
             TextColor3 = theme.SubTextColor,
             TextSize = 12,
             Font = Enum.Font.Gotham,
