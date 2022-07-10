@@ -115,6 +115,18 @@ do
             GUI = ScreenGui
         }
 
+        --//Tip bar
+        local TipBar = util.new("TextLabel", {
+            Parent = MasterContainer,
+            Size = UDim2.new(0,0,0,12),
+            Position = UDim2.new(0,0,1,-12),
+            ZIndex = 50,
+            TextColor3 = theme.TextColor,
+            Font = Enum.Font.Gotham,
+            TextSize = 10,
+            BackgroundColor3 = theme.BackColor,
+        })
+
         --//Main containers
         local TopBarContainer, ContentContainer = util.children(MasterContainer, {
             util.new("Frame", { --> TopBarContainer
@@ -224,6 +236,7 @@ do
             ContentContainer = ContentContainer,
             TabSelectContainer = TabSelectContainer,
             TabContentContainer = TabContentContainer,
+            TipBar = TipBar,
 
             registerExternalClickFunction = registerExternalClickFunction,
         }, library):_registerKeybind()
@@ -411,6 +424,12 @@ do
         }, panel)
     end
 
+    function panel:SetTip(tipText)
+        local TipBar = self.tab.library.TipBar
+        TipBar.Text = tipText
+        TipBar.Size = UDim2.new(0,TipBar.TextBounds.X+2,0,12)
+    end
+
     function panel:_GlobalTable()
         local values = self.tab.library.values
         local tab = self.tab.title
@@ -510,9 +529,11 @@ do
         end)
         Container.MouseEnter:Connect(function()
             util.tween(CheckboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+            panel:SetTip(data.desc or "")
         end)
         Container.MouseLeave:Connect(function()
             util.tween(CheckboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+            panel:SetTip("")
         end)
 
 
@@ -873,9 +894,11 @@ do
         --Container hover
         Container.MouseEnter:Connect(function()
             util.tween(SliderboxOutline, { BackgroundColor3 = theme.Accent }, 0.1)
+            panel:SetTip(data.desc or "")
         end)
         Container.MouseLeave:Connect(function()
             util.tween(SliderboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.1)
+            panel:SetTip("")
         end)
 
         return {
@@ -1042,11 +1065,13 @@ do
         end)
         Container.MouseEnter:Connect(function()
             util.tween(DropdownboxOutline, { BackgroundColor3 = theme.Accent }, 0.07)
+            panel:SetTip(data.desc or "")
         end)
         Container.MouseLeave:Connect(function()
             if not self.expanded then
                 util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
             end
+            panel:SetTip("")
         end)
         panel.tab.library.registerExternalClickFunction(function(inp) --click outside dropdown
             self.expanded = false
@@ -1255,11 +1280,13 @@ do
         end)
         Container.MouseEnter:Connect(function()
             util.tween(DropdownboxOutline, { BackgroundColor3 = theme.Accent }, 0.07)
+            panel:SetTip(data.desc or "")
         end)
         Container.MouseLeave:Connect(function()
             if not self.expanded then
                 util.tween(DropdownboxOutline, { BackgroundColor3 = theme.InteractableOutline }, 0.07)
             end
+            panel:SetTip("")
         end)
         panel.tab.library.registerExternalClickFunction(function(inp) --click outside dropdown
             self.expanded = false
