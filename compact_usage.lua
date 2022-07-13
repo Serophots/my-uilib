@@ -10,7 +10,7 @@ local AimOne, AimTwo = UI:AddTab("Aim", "Silent Aim") do
 	local Section = AimOne:AddSeperator("Silent Aim") do
 		local masterToggle = Section:AddToggle({
 			title = "Enabled",
-			desc = "This is a small tip which will appear when the user hovers over this toggle. It works on all elements"
+			desc = "This is a small tip which will appear when the user hovers over this toggle. It works on all elements",
 			callback = function(state)
 				print("Toggled: ", state)
 			end
